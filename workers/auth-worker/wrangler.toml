@@ -1,0 +1,17 @@
+name = "auth-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8788
+
+[vars]
+WEB_URL = "http://localhost:3000"
+BETTER_AUTH_URL = "http://localhost:8788"
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "auth-db"
+database_id = "YOUR_DATABASE_ID"
+migrations_dir = "drizzle"

@@ -1,0 +1,19 @@
+{
+  "name": "web-template",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "deploy": "turbo deploy",
+    "db:generate": "turbo db:generate",
+    "db:migrate:local": "turbo db:migrate:local",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e"
+  },
+  "devDependencies": {
+    "turbo": "^2",
+    "typescript": "^5.7"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

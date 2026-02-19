@@ -1,0 +1,28 @@
+node_modules
+dist
+.output
+.wrangler
+.turbo
+.dev.vars
+
+# OS
+.DS_Store
+
+# IDE
+.vscode
+.idea
+
+# Env
+*.local
+
+# Claude Code
+.claude/memory
+
+# Playwright
+**/playwright/.auth/
+**/playwright-report/
+**/test-results/
+
+# Generated
+*.tsbuildinfo
+**/routeTree.gen.ts
