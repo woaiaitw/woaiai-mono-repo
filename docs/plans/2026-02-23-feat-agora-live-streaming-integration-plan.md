@@ -575,16 +575,16 @@ New API surface is entirely additive — no existing endpoints are modified:
 
 **Tasks:**
 
-- [ ] Implement dual-client screen sharing (camera client + screen client with UID offset)
-- [ ] Handle screen share track rendering on viewer side (detect UID >= 100000)
-- [ ] Implement screen share layout (screen share as primary, camera as PiP)
-- [ ] Build STT lifecycle endpoints in video-worker (`/api/stt/start`, `/api/stt/stop`)
-- [ ] Integrate STT start/stop with "Go Live" / "End Stream" flow
-- [ ] Add `protobufjs` to `apps/web` for decoding STT data stream messages
-- [ ] Implement caption rendering component (closed-captioning style at bottom of video)
-- [ ] Handle interim vs. final transcription results (opacity difference)
-- [ ] Handle multi-speaker caption attribution
-- [ ] Implement STT health monitoring (periodic status checks, auto-restart on failure)
+- [x] Implement dual-client screen sharing (camera client + screen client with UID offset)
+- [x] Handle screen share track rendering on viewer side (detect UID >= 100000)
+- [x] Implement screen share layout (screen share as primary, camera as PiP)
+- [x] Build STT lifecycle endpoints in video-worker (`/api/stt/start`, `/api/stt/stop`)
+- [x] Integrate STT start/stop with "Go Live" / "End Stream" flow
+- [x] Add `protobufjs` to `apps/web` for decoding STT data stream messages
+- [x] Implement caption rendering component (closed-captioning style at bottom of video)
+- [x] Handle interim vs. final transcription results (opacity difference)
+- [x] Handle multi-speaker caption attribution
+- [x] Implement STT health monitoring (periodic status checks, auto-restart on failure)
 
 **Key files:**
 - `apps/web/src/components/stream/ScreenShare.tsx`
@@ -599,17 +599,17 @@ New API surface is entirely additive — no existing endpoints are modified:
 
 **Tasks:**
 
-- [ ] Configure R2 bucket (`stream-recordings`) in video-worker wrangler.toml
-- [ ] Build Cloud Recording lifecycle endpoints (`/api/recording/start`, `/stop`, `/status`)
-- [ ] Integrate recording start/stop with "Go Live" / "End Stream" flow
-- [ ] Configure S3-compatible storage in Cloud Recording API (`vendor: 11`, R2 endpoint)
-- [ ] Implement recording health monitoring (periodic `query` calls during stream)
-- [ ] Handle recording failure gracefully (warn host, continue stream)
-- [ ] Build post-stream replay UI at `/event/:slug` (video player with R2-served recording)
-- [ ] Generate transcript files (VTT format) from aggregated STT data after stream ends
-- [ ] Store transcripts in R2 and record metadata in D1
-- [ ] Build signed URL generation for admin recording download
-- [ ] Implement recording processing detection (polling until files are available in R2)
+- [x] Configure R2 bucket (`stream-recordings`) in video-worker wrangler.toml
+- [x] Build Cloud Recording lifecycle endpoints (`/api/recording/start`, `/stop`, `/status`)
+- [x] Integrate recording start/stop with "Go Live" / "End Stream" flow
+- [x] Configure S3-compatible storage in Cloud Recording API (`vendor: 11`, R2 endpoint)
+- [x] Implement recording health monitoring (periodic `query` calls during stream)
+- [x] Handle recording failure gracefully (warn host, continue stream)
+- [x] Build post-stream replay UI at `/event/:slug` (video player with R2-served recording)
+- [x] Generate transcript files (VTT format) from aggregated STT data after stream ends
+- [x] Store transcripts in R2 and record metadata in D1
+- [x] Build signed URL generation for admin recording download
+- [x] Implement recording processing detection (polling until files are available in R2)
 
 **Key files:**
 - `workers/video-worker/src/routes/recording.ts`
