@@ -1,0 +1,21 @@
+name = "video-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8789
+
+[vars]
+WEB_URL = "http://localhost:3000"
+AUTH_WORKER_URL = "http://localhost:8788"
+
+[[d1_databases]]
+binding = "VIDEO_DB"
+database_name = "video-db"
+database_id = "YOUR_DATABASE_ID"
+migrations_dir = "drizzle"
+
+[[r2_buckets]]
+binding = "RECORDINGS_BUCKET"
+bucket_name = "stream-recordings"

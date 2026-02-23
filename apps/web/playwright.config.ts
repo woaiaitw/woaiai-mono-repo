@@ -41,6 +41,12 @@ export default defineConfig({
       cwd: "../..",
     },
     {
+      command: "pnpm --filter video-worker dev",
+      url: "http://localhost:8789/health",
+      reuseExistingServer: !process.env.CI,
+      cwd: "../..",
+    },
+    {
       command: "pnpm --filter web dev",
       url: "http://localhost:3000",
       reuseExistingServer: !process.env.CI,
