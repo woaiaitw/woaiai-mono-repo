@@ -544,22 +544,22 @@ New API surface is entirely additive — no existing endpoints are modified:
 
 **Tasks:**
 
-- [ ] Install `agora-rtc-sdk-ng` and `agora-rtc-react` in `apps/web`
-- [ ] Create Agora client library (`apps/web/src/lib/agora-client.ts`)
-- [ ] Create video-worker client library (`apps/web/src/lib/video-client.ts`)
-- [ ] Build `/event/:slug` route with role-based rendering:
+- [x] Install `agora-rtc-sdk-ng` and `agora-rtc-react` in `apps/web`
+- [x] Create Agora client library (`apps/web/src/lib/agora-client.ts`)
+- [x] Create video-worker client library (`apps/web/src/lib/video-client.ts`)
+- [x] Build `/event/:slug` route with role-based rendering:
   - Pre-stream: placeholder + countdown
   - Live (viewer): video player subscribing to host/speaker tracks
   - Live (host): broadcast controls, "Go Live" / "End Stream" buttons
   - Post-stream: replay player (Phase 4)
-- [ ] Implement host broadcast flow: create tracks → join channel → publish
-- [ ] Implement viewer subscribe flow: join channel as audience → subscribe to published tracks
-- [ ] Implement role switching: `setClientRole("host" | "audience")`
-- [ ] Implement speaker promotion/demotion UI (host panel)
-- [ ] Implement hand-raise flow (admin → video-worker → host polls)
-- [ ] Implement host transfer UI
-- [ ] Implement token auto-renewal (`token-privilege-will-expire` handler)
-- [ ] Implement connection state monitoring and reconnection UI
+- [x] Implement host broadcast flow: create tracks → join channel → publish
+- [x] Implement viewer subscribe flow: join channel as audience → subscribe to published tracks
+- [x] Implement role switching: `setClientRole("host" | "audience")`
+- [x] Implement speaker promotion/demotion UI (host panel)
+- [x] Implement hand-raise flow (admin → video-worker → host polls)
+- [x] Implement host transfer UI
+- [x] Implement token auto-renewal (`token-privilege-will-expire` handler)
+- [x] Implement connection state monitoring and reconnection UI
 
 **Key files:**
 - `apps/web/src/routes/event.$slug.tsx`

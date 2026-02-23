@@ -13,6 +13,8 @@
     "@tanstack/react-router": "^1",
     "@tanstack/react-start": "^1",
     "@web-template/shared": "workspace:*",
+    "agora-rtc-react": "^2.5.1",
+    "agora-rtc-sdk-ng": "^4.24.2",
     "better-auth": "^1",
     "react": "^19",
     "react-dom": "^19"
