@@ -1,7 +1,7 @@
 ---
 title: "feat: Agora.io Live Streaming Integration"
 type: feat
-status: active
+status: completed
 date: 2026-02-23
 origin: docs/brainstorms/2026-02-23-agora-live-streaming-brainstorm.md
 ---
@@ -623,12 +623,12 @@ New API surface is entirely additive — no existing endpoints are modified:
 
 **Tasks:**
 
-- [ ] Build `/dashboard/streams` — list of all streams with status badges
-- [ ] Build `/dashboard/streams/new` — create stream form (title, description, date/time, host assignment)
-- [ ] Build `/dashboard/streams/:id` — edit stream, view status, cancel/reschedule
-- [ ] Build `/dashboard/streams/:id/recordings` — view recording status, download link
-- [ ] Implement slug generation (from title, with uniqueness check)
-- [ ] Add stream scheduling validation (future dates only, no conflicts)
+- [x] Build `/dashboard/streams` — list of all streams with status badges
+- [x] Build `/dashboard/streams/new` — create stream form (title, description, date/time, host assignment)
+- [x] Build `/dashboard/streams/:id` — edit stream, view status, cancel/reschedule
+- [x] Build `/dashboard/streams/:id/recordings` — view recording status, download link
+- [x] Implement slug generation (from title, with uniqueness check)
+- [x] Add stream scheduling validation (future dates only, no conflicts)
 
 **Key files:**
 - `apps/web/src/routes/dashboard.streams.tsx`
