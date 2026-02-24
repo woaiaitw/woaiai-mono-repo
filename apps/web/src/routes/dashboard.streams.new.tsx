@@ -19,7 +19,7 @@ function NewStreamPage() {
 
   if (isPending) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-gray-500">Loading...</p>
       </div>
     );
@@ -27,7 +27,7 @@ function NewStreamPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-gray-600">Sign in required.</p>
       </div>
     );
@@ -50,6 +50,7 @@ function NewStreamPage() {
         description: description || undefined,
         scheduledAt,
         hostUserId: session.user.id,
+        hostName: session.user.name,
       });
       navigate({ to: "/dashboard/streams/$id", params: { id: stream.id } });
     } catch (err) {
@@ -59,9 +60,8 @@ function NewStreamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-gray-900">Create New Stream</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900">Create New Stream</h1>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-5">
           {error && (
@@ -151,7 +151,6 @@ function NewStreamPage() {
             </button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

@@ -1,11 +1,16 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+} from "@tanstack/react-router";
 import { authClient } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard")({
-  component: DashboardPage,
+  component: DashboardLayout,
 });
 
-function DashboardPage() {
+function DashboardLayout() {
   const navigate = useNavigate();
   const { data: session, isPending } = authClient.useSession();
 
@@ -38,39 +43,75 @@ function DashboardPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+  const role = session.user.role as string | undefined;
+  if (role === "viewer" || (!role && role !== undefined)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center space-y-4">
+          <p className="text-gray-600">
+            You don't have access to the dashboard.
+          </p>
+          <Link
+            to="/"
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Sign Out
-          </button>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Session Info</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-500">Name</span>
-              <span className="text-gray-900">{session.user.name}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-gray-100">
-              <span className="text-gray-500">Email</span>
-              <span className="text-gray-900">{session.user.email}</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span className="text-gray-500">User ID</span>
-              <span className="text-gray-900 font-mono text-xs">
-                {session.user.id}
-              </span>
-            </div>
-          </div>
+            Go Home
+          </Link>
         </div>
       </div>
+    );
+  }
+
+  const isAdmin = role === "admin";
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Dashboard Nav */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="text-lg font-bold text-gray-900">
+              Woai
+            </Link>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link
+                to="/dashboard/streams"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                activeProps={{ className: "text-gray-900 font-medium" }}
+              >
+                Streams
+              </Link>
+              {isAdmin && (
+                <Link
+                  to="/dashboard/users"
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  activeProps={{ className: "text-gray-900 font-medium" }}
+                >
+                  Users
+                </Link>
+              )}
+            </nav>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">{session.user.name}</span>
+            <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+              {role}
+            </span>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        <Outlet />
+      </main>
     </div>
   );
 }

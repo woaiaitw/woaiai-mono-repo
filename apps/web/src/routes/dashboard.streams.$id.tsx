@@ -7,7 +7,8 @@ import {
   deleteStream,
   publishStream,
 } from "~/lib/video-client";
-import type { Stream, StreamStatus } from "@web-template/shared";
+import { StatusBadge } from "~/components/stream/StatusBadge";
+import type { Stream } from "@web-template/shared";
 
 export const Route = createFileRoute("/dashboard/streams/$id")({
   component: StreamDetailPage,
@@ -76,7 +77,7 @@ function StreamDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-gray-500">Loading...</p>
       </div>
     );
@@ -84,7 +85,7 @@ function StreamDetailPage() {
 
   if (!stream) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-gray-600">{error ?? "Stream not found."}</p>
       </div>
     );
@@ -94,8 +95,7 @@ function StreamDetailPage() {
   const canEdit = stream.status === "draft" || stream.status === "scheduled";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="space-y-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to="/dashboard/streams" className="hover:text-blue-600">
@@ -257,27 +257,6 @@ function StreamDetailPage() {
             </a>
           </div>
         </div>
-      </div>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: StreamStatus }) {
-  const styles: Record<StreamStatus, string> = {
-    draft: "bg-gray-100 text-gray-600",
-    scheduled: "bg-blue-100 text-blue-700",
-    pre_stream: "bg-yellow-100 text-yellow-700",
-    live: "bg-red-100 text-red-700",
-    paused: "bg-yellow-100 text-yellow-700",
-    ending: "bg-orange-100 text-orange-700",
-    processing: "bg-purple-100 text-purple-700",
-    completed: "bg-green-100 text-green-700",
-    cancelled: "bg-gray-100 text-gray-500",
-  };
-
-  return (
-    <span className={`px-2 py-1 rounded text-xs font-medium ${styles[status]}`}>
-      {status.replace("_", " ")}
-    </span>
   );
 }

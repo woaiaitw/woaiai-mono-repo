@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Stream, SignalingMessage } from "@web-template/shared";
 import { authClient } from "~/lib/auth-client";
@@ -409,11 +409,16 @@ function EventPage() {
         <div className="flex-1 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-white">{stream.title}</h1>
-              {stream.description && (
-                <p className="text-sm text-gray-400">{stream.description}</p>
-              )}
+            <div className="flex items-center gap-3">
+              <Link to="/" className="text-gray-400 hover:text-white text-sm">
+                &larr; Home
+              </Link>
+              <div>
+                <h1 className="text-xl font-bold text-white">{stream.title}</h1>
+                {stream.description && (
+                  <p className="text-sm text-gray-400">{stream.description}</p>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <span

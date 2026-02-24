@@ -42,15 +42,14 @@ function RecordingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-gray-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="space-y-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to="/dashboard/streams" className="hover:text-blue-600">
@@ -135,7 +134,6 @@ function RecordingsPage() {
             </div>
           ))}
         </div>
-      </div>
     </div>
   );
 }
