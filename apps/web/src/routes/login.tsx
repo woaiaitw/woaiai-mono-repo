@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { authClient } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/login")({
@@ -6,6 +7,61 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (isSignUp && !name) {
+      setError("Name is required for sign up.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const { error: signUpError } = await authClient.signUp.email({
+          email,
+          password,
+          name,
+        });
+        if (signUpError) {
+          setError(signUpError.message ?? "Sign up failed.");
+          return;
+        }
+      } else {
+        const { error: signInError } = await authClient.signIn.email({
+          email,
+          password,
+        });
+        if (signInError) {
+          setError(signInError.message ?? "Sign in failed.");
+          return;
+        }
+      }
+      navigate({ to: "/dashboard" });
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     await authClient.signIn.social({
       provider: "google",
@@ -17,11 +73,100 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm space-y-6 p-8 bg-white rounded-xl shadow-sm">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Sign In</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isSignUp ? "Create Account" : "Sign In"}
+          </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to access your dashboard
+            {isSignUp
+              ? "Sign up to get started"
+              : "Sign in to access your dashboard"}
           </p>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Your name"
+                required
+              />
+            </div>
+          )}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="••••••••"
+              minLength={8}
+              required
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+          >
+            {loading
+              ? isSignUp
+                ? "Creating account…"
+                : "Signing in…"
+              : isSignUp
+                ? "Create Account"
+                : "Sign In"}
+          </button>
+        </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">or</span>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -49,6 +194,21 @@ function LoginPage() {
             Continue with Google
           </span>
         </button>
+
+        <p className="text-center text-sm text-gray-600">
+          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError("");
+            }}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            {isSignUp ? "Sign in" : "Sign up"}
+          </button>
+        </p>
+
         <div className="text-center">
           <Link
             to="/"
