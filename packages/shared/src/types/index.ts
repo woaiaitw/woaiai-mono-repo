@@ -1,8 +1,11 @@
+export type UserRole = "viewer" | "host" | "admin";
+
 export interface User {
   id: string;
   name: string;
   email: string;
   image?: string | null;
+  role?: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,10 +50,17 @@ export interface Stream {
   startedAt: Date | null;
   endedAt: Date | null;
   hostUserId: string;
+  hostName: string | null;
   agoraChannelName: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface PublicStreamListing {
+  live: Stream[];
+  upcoming: Stream[];
+  past: Stream[];
 }
 
 export interface Participant {

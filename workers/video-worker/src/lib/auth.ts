@@ -3,7 +3,13 @@ import type { Env } from "../env.d.ts";
 
 interface SessionResponse {
   session: { id: string; userId: string; expiresAt: string } | null;
-  user: { id: string; name: string; email: string; image?: string } | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string;
+    role?: string;
+  } | null;
 }
 
 export async function getSessionFromAuth(

@@ -8,6 +8,13 @@
       "when": 1771857816540,
       "tag": "0000_luxuriant_silver_centurion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1771946131557,
+      "tag": "0001_huge_maddog",
+      "breakpoints": true
     }
   ]
 }

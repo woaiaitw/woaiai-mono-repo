@@ -10,6 +10,7 @@
     "db:migrate:local": "turbo db:migrate:local",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "db:seed": "bash scripts/seed-dev.sh",
     "update:template": "git fetch web-template main && git merge web-template/main"
 
   },

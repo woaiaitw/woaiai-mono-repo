@@ -24,6 +24,7 @@ export const stream = sqliteTable("stream", {
   startedAt: integer("started_at", { mode: "timestamp" }),
   endedAt: integer("ended_at", { mode: "timestamp" }),
   hostUserId: text("host_user_id").notNull(),
+  hostName: text("host_name"),
   agoraChannelName: text("agora_channel_name").notNull().unique(),
   createdBy: text("created_by").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })

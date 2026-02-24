@@ -1,4 +1,4 @@
-import type { Stream, TokenResponse } from "@web-template/shared";
+import type { Stream, TokenResponse, PublicStreamListing } from "@web-template/shared";
 
 const VIDEO_WORKER_URL =
   import.meta.env.VITE_VIDEO_WORKER_URL ?? "http://localhost:8789";
@@ -24,11 +24,16 @@ async function fetchJson<T>(
 
 // ─── Stream API ─────────────────────────────────────────────────
 
+export async function listPublicStreams(): Promise<PublicStreamListing> {
+  return fetchJson("/api/streams/public");
+}
+
 export async function createStream(data: {
   title: string;
   description?: string;
   scheduledAt: string;
   hostUserId: string;
+  hostName?: string;
 }): Promise<Stream> {
   return fetchJson("/api/streams", {
     method: "POST",

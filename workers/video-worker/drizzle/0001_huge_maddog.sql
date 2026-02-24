@@ -1,0 +1,1 @@
+ALTER TABLE `stream` ADD `host_name` text;

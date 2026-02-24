@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema";
 import type { Env } from "../env.d.ts";
@@ -29,6 +30,12 @@ export function getAuth(env: Env) {
         clientSecret: env.GOOGLE_CLIENT_SECRET,
       },
     },
+    plugins: [
+      admin({
+        defaultRole: "viewer",
+        adminRoles: ["admin"],
+      }),
+    ],
     trustedOrigins: [env.WEB_URL],
     advanced: {
       defaultCookieAttributes: isLocal

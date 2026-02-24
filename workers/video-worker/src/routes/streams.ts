@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { eq, inArray, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { Env } from "../env.d.ts";
 import { getDb } from "../lib/db";
@@ -18,11 +18,17 @@ streamRoutes.post("/", async (c) => {
   const auth = await requireAuth(c);
   if (auth.error) return auth.response;
 
+  const role = auth.user.role ?? "viewer";
+  if (role !== "host" && role !== "admin") {
+    return c.json({ error: "Only hosts and admins can create streams" }, 403);
+  }
+
   const body = await c.req.json<{
     title: string;
     description?: string;
     scheduledAt: string;
     hostUserId: string;
+    hostName?: string;
   }>();
 
   if (!body.title || !body.scheduledAt || !body.hostUserId) {
@@ -44,6 +50,7 @@ streamRoutes.post("/", async (c) => {
       status: "draft",
       scheduledAt: new Date(body.scheduledAt),
       hostUserId: body.hostUserId,
+      hostName: body.hostName ?? null,
       agoraChannelName: channelName,
       createdBy: auth.user.id,
     })
@@ -57,7 +64,19 @@ streamRoutes.get("/", async (c) => {
   if (auth.error) return auth.response;
 
   const db = getDb(c.env.VIDEO_DB);
-  const streams = await db.select().from(stream).orderBy(stream.scheduledAt);
+  const role = auth.user.role ?? "viewer";
+
+  if (role === "admin") {
+    const streams = await db.select().from(stream).orderBy(stream.scheduledAt);
+    return c.json(streams);
+  }
+
+  // Hosts see only their own streams
+  const streams = await db
+    .select()
+    .from(stream)
+    .where(eq(stream.hostUserId, auth.user.id))
+    .orderBy(stream.scheduledAt);
   return c.json(streams);
 });
 
@@ -80,11 +99,17 @@ streamRoutes.patch("/:id", async (c) => {
     description?: string;
     scheduledAt?: string;
     hostUserId?: string;
+    hostName?: string;
   }>();
 
   const db = getDb(c.env.VIDEO_DB);
   const [existing] = await db.select().from(stream).where(eq(stream.id, c.req.param("id")));
   if (!existing) return c.json({ error: "Stream not found" }, 404);
+
+  const role = auth.user.role ?? "viewer";
+  if (role !== "admin" && existing.hostUserId !== auth.user.id) {
+    return c.json({ error: "You can only edit your own streams" }, 403);
+  }
 
   if (existing.status !== "draft" && existing.status !== "scheduled") {
     return c.json({ error: "Can only edit draft or scheduled streams" }, 400);
@@ -95,6 +120,7 @@ streamRoutes.patch("/:id", async (c) => {
   if (body.description !== undefined) updates.description = body.description;
   if (body.scheduledAt !== undefined) updates.scheduledAt = new Date(body.scheduledAt);
   if (body.hostUserId !== undefined) updates.hostUserId = body.hostUserId;
+  if (body.hostName !== undefined) updates.hostName = body.hostName;
 
   const [updated] = await db
     .update(stream)
@@ -112,6 +138,11 @@ streamRoutes.delete("/:id", async (c) => {
   const db = getDb(c.env.VIDEO_DB);
   const [existing] = await db.select().from(stream).where(eq(stream.id, c.req.param("id")));
   if (!existing) return c.json({ error: "Stream not found" }, 404);
+
+  const role = auth.user.role ?? "viewer";
+  if (role !== "admin" && existing.hostUserId !== auth.user.id) {
+    return c.json({ error: "You can only cancel your own streams" }, 403);
+  }
 
   if (existing.status === "live" || existing.status === "paused") {
     return c.json({ error: "Cannot delete a live or paused stream" }, 400);
@@ -239,6 +270,23 @@ streamRoutes.post("/:id/resume", async (c) => {
 });
 
 // ─── Public Access (no auth) ────────────────────────────────────
+
+streamRoutes.get("/public", async (c) => {
+  const db = getDb(c.env.VIDEO_DB);
+
+  const publicStatuses = ["live", "paused", "scheduled", "pre_stream", "completed"] as const;
+  const allStreams = await db
+    .select()
+    .from(stream)
+    .where(inArray(stream.status, [...publicStatuses]))
+    .orderBy(stream.scheduledAt);
+
+  const live = allStreams.filter((s) => s.status === "live" || s.status === "paused");
+  const upcoming = allStreams.filter((s) => s.status === "scheduled" || s.status === "pre_stream");
+  const past = allStreams.filter((s) => s.status === "completed").slice(-20).reverse();
+
+  return c.json({ live, upcoming, past });
+});
 
 streamRoutes.get("/by-slug/:slug", async (c) => {
   const db = getDb(c.env.VIDEO_DB);
