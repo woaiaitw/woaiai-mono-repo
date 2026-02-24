@@ -30,9 +30,11 @@ function UsersPage() {
   const fetchUsers = useCallback(async () => {
     try {
       const result = await authClient.admin.listUsers({
-        limit: 100,
-        sortBy: "name",
-        sortDirection: "asc",
+        query: {
+          limit: 100,
+          sortBy: "name",
+          sortDirection: "asc",
+        },
       });
       if (result.data) {
         setUsers(result.data.users as AdminUser[]);
@@ -59,7 +61,10 @@ function UsersPage() {
     setError(null);
 
     try {
-      await authClient.admin.setRole({ userId, role: newRole });
+      await authClient.admin.setRole({
+        userId,
+        role: newRole as "admin" | "user",
+      });
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
       );

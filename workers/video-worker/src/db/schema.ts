@@ -1,3 +1,4 @@
+import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
 // ─── Streams ────────────────────────────────────────────────────
@@ -103,7 +104,7 @@ export const transcript = sqliteTable("transcript", {
     .notNull()
     .default(false),
   sourceTranscriptId: text("source_transcript_id").references(
-    () => transcript.id
+    (): AnySQLiteColumn => transcript.id
   ),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()

@@ -30,6 +30,7 @@ export default defineWorkersProject(async () => {
                 id: "test-user-1",
                 name: "Test User",
                 email: "test@example.com",
+                role: "host",
               }),
               TEST_MIGRATIONS: migrations,
             },
