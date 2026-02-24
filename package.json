@@ -11,6 +11,7 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "update:template": "git fetch web-template main && git merge web-template/main"
+
   },
   "devDependencies": {
     "turbo": "^2",
