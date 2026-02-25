@@ -5,6 +5,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
   "vars": {
-    "AUTH_WORKER_URL": "http://localhost:8788"
+    "AUTH_WORKER_URL": "http://localhost:8788",
+    "RTC_WORKER_URL": "http://localhost:8789"
   }
 }

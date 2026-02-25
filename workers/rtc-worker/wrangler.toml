@@ -1,0 +1,20 @@
+name = "rtc-worker"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8789
+inspector_port = 9230
+
+[vars]
+WEB_URL = "http://localhost:3000"
+
+[durable_objects]
+bindings = [
+  { name = "CAPTION_ROOM", class_name = "CaptionRoom" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["CaptionRoom"]

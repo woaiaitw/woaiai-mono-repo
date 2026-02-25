@@ -4,6 +4,7 @@ dist
 .wrangler
 .turbo
 .dev.vars
+.env
 
 # OS
 .DS_Store
