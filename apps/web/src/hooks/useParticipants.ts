@@ -20,18 +20,37 @@ export function useParticipants(
     const m = meetingRef.current;
 
     function subscribeToParticipant(id: string) {
+      console.log("[RTK-DEBUG] subscribing to participant:", id);
       m.participants
         .subscribe(
           [id],
           ["audio", "video", "screenshareAudio", "screenshareVideo"]
         )
-        .catch(() => {});
+        .then(() => console.log("[RTK-DEBUG] subscribe SUCCESS for:", id))
+        .catch((err: unknown) =>
+          console.error("[RTK-DEBUG] subscribe FAILED for:", id, err)
+        );
     }
 
     function updateParticipants() {
-      const remote = Array.from(
-        m.participants.joined.values()
-      ).map((p: any) => ({
+      const raw = Array.from(m.participants.joined.values());
+      console.log(
+        "[RTK-DEBUG] updateParticipants — raw joined:",
+        raw.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          presetName: p.presetName,
+          preset: p.preset,
+          videoEnabled: p.videoEnabled,
+          audioEnabled: p.audioEnabled,
+          hasVideoTrack: !!p.videoTrack,
+          hasAudioTrack: !!p.audioTrack,
+          videoTrackReadyState: p.videoTrack?.readyState ?? "N/A",
+          audioTrackReadyState: p.audioTrack?.readyState ?? "N/A",
+          allKeys: Object.keys(p),
+        }))
+      );
+      const remote = raw.map((p: any) => ({
         id: p.id,
         name: p.name,
         videoEnabled: p.videoEnabled,
@@ -45,11 +64,37 @@ export function useParticipants(
       dispatch({ type: "SET_REMOTE_PARTICIPANTS", participants: remote });
     }
 
-    for (const p of m.participants.joined.values()) {
-      subscribeToParticipant(p.id);
-    }
+    // Enable manual subscription mode before subscribing to any participants.
+    // Without this, participants.subscribe() fails with ERR1206.
+    console.log("[RTK-DEBUG] setting viewMode to MANUAL");
+    (m.participants as any)
+      .setViewMode("MANUAL")
+      .then(() => {
+        console.log("[RTK-DEBUG] viewMode set to MANUAL successfully");
+
+        // Now subscribe to any participants already in the meeting
+        const initialJoined = Array.from(m.participants.joined.values());
+        console.log(
+          "[RTK-DEBUG] initial joined participants:",
+          initialJoined.length,
+          initialJoined.map((p: any) => p.id)
+        );
+        for (const p of initialJoined) {
+          subscribeToParticipant(p.id);
+        }
+        updateParticipants();
+      })
+      .catch((err: unknown) => {
+        console.error("[RTK-DEBUG] setViewMode FAILED:", err);
+      });
 
     const onParticipantJoined = (participant: any) => {
+      console.log("[RTK-DEBUG] participantJoined event:", {
+        id: participant.id,
+        name: participant.name,
+        presetName: participant.presetName,
+        preset: participant.preset,
+      });
       subscribeToParticipant(participant.id);
       updateParticipants();
     };

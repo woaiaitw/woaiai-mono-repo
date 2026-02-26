@@ -22,12 +22,14 @@ export async function createMeeting(
     }
   );
 
+  const text = await res.text();
+  console.log("[RTC-DEBUG] CF createMeeting response:", res.status, text);
+
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Failed to create meeting: ${res.status} ${error}`);
+    throw new Error(`Failed to create meeting: ${res.status} ${text}`);
   }
 
-  const json = (await res.json()) as {
+  const json = JSON.parse(text) as {
     success: boolean;
     data: { id: string };
   };
@@ -52,12 +54,14 @@ export async function addParticipant(
     }
   );
 
+  const text = await res.text();
+  console.log("[RTC-DEBUG] CF addParticipant response:", res.status, text);
+
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Failed to add participant: ${res.status} ${error}`);
+    throw new Error(`Failed to add participant: ${res.status} ${text}`);
   }
 
-  const json = (await res.json()) as {
+  const json = JSON.parse(text) as {
     success: boolean;
     data: { id: string; token: string };
   };

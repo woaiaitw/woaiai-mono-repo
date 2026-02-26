@@ -125,11 +125,29 @@ export function VideoGrid({
   // Show hosts and self — viewers without video are hidden from the grid
   const visibleParticipants = participants.filter(
     (p) =>
-      p.presetName === "livestream_host" ||
+      p.presetName === "group_call_host" ||
       p.id === selfId ||
       p.videoEnabled ||
       p.videoTrack
   );
+
+  useEffect(() => {
+    console.log(
+      "[RTK-DEBUG] VideoGrid — total=%d visible=%d",
+      participants.length,
+      visibleParticipants.length
+    );
+    for (const p of visibleParticipants) {
+      console.log(
+        "[RTK-DEBUG]   participant id=%s name=%s preset=%s videoTrack=%o audioTrack=%o videoEnabled=%s audioEnabled=%s",
+        p.id, p.name, p.presetName,
+        p.videoTrack ? `${p.videoTrack.kind}:${p.videoTrack.readyState}` : null,
+        p.audioTrack ? `${p.audioTrack.kind}:${p.audioTrack.readyState}` : null,
+        p.videoEnabled, p.audioEnabled
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants.length, visibleParticipants.length]);
 
   if (visibleParticipants.length === 0) return null;
 

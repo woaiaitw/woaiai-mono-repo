@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRealtimeKitSelector } from "@cloudflare/realtimekit-react";
 import type { Participant } from "../components/VideoGrid";
 
@@ -25,6 +25,16 @@ export function useSelfParticipant(
     | { video: MediaStreamTrack | null; audio: MediaStreamTrack | null }
     | undefined;
 
+  useEffect(() => {
+    console.log("[RTK-DEBUG] selfId=%s audioEnabled=%s videoEnabled=%s", selfId, selfAudioEnabled, selfVideoEnabled);
+    console.log("[RTK-DEBUG]   audioTrack=%o videoTrack=%o", selfAudioTrack, selfVideoTrack);
+    console.log(
+      "[RTK-DEBUG]   audioTrack.readyState=%s videoTrack.readyState=%s",
+      selfAudioTrack?.readyState ?? "N/A",
+      selfVideoTrack?.readyState ?? "N/A"
+    );
+  }, [selfId, selfAudioEnabled, selfVideoEnabled, selfAudioTrack, selfVideoTrack]);
+
   return useMemo(() => {
     if (!joined) return null;
     return {
@@ -36,7 +46,7 @@ export function useSelfParticipant(
       audioTrack: selfAudioTrack,
       screenShareEnabled: selfScreenShareEnabled,
       screenShareTracks: selfScreenShareTracks ?? { video: null, audio: null },
-      presetName: isHost ? "livestream_host" : "livestream_viewer",
+      presetName: isHost ? "group_call_host" : "group_call_participant",
     };
   }, [
     isHost,

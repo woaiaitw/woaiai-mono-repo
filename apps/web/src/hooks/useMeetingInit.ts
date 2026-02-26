@@ -18,16 +18,20 @@ export function useMeetingInit(
     const controller = new AbortController();
     dispatch({ type: "START_JOIN", role });
 
+    console.log("[RTK-DEBUG] useMeetingInit: calling joinMeeting with role=%s", role);
     joinMeeting(role, undefined, controller.signal)
       .then((result) => {
         if (controller.signal.aborted) return;
+        console.log("[RTK-DEBUG] joinMeeting response: meetingId=%s participantId=%s", result.meetingId, result.participantId);
         dispatch({ type: "API_SUCCESS", meetingId: result.meetingId });
+        const defaults = {
+          audio: role === "host",
+          video: role === "host",
+        };
+        console.log("[RTK-DEBUG] initMeeting called with defaults:", defaults);
         initMeetingRef.current({
           authToken: result.authToken,
-          defaults: {
-            audio: role === "host",
-            video: role === "host",
-          },
+          defaults,
         });
       })
       .catch((err) => {

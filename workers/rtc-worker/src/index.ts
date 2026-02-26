@@ -22,14 +22,15 @@ app.use(
 );
 
 /** Get or create meeting ID, persisted in Durable Object storage */
-async function getOrCreateMeetingId(env: Env): Promise<string> {
+async function getOrCreateMeetingId(env: Env, forceNew = false): Promise<string> {
   const doId = env.CAPTION_ROOM.idFromName("main-room");
   const room = env.CAPTION_ROOM.get(doId);
 
-  const resp = await room.fetch(new Request("http://do/meeting-id"));
-  const data = (await resp.json()) as { meetingId: string | null };
-
-  if (data.meetingId) return data.meetingId;
+  if (!forceNew) {
+    const resp = await room.fetch(new Request("http://do/meeting-id"));
+    const data = (await resp.json()) as { meetingId: string | null };
+    if (data.meetingId) return data.meetingId;
+  }
 
   const meeting = await createMeeting(env);
 
@@ -61,19 +62,34 @@ app.post("/api/rtc/join", async (c) => {
     const body = await c.req.json<{ role: string; name?: string; sessionId?: string }>();
     const role = body.role === "host" ? "host" : "viewer";
     const presetName =
-      role === "host" ? "livestream_host" : "livestream_viewer";
+      role === "host" ? "group_call_host" : "group_call_participant";
     const name = body.name || (role === "host" ? "Host" : "Viewer");
 
     // Use client's persistent session ID so rejoining replaces the stale participant
     const customParticipantId = body.sessionId || crypto.randomUUID();
 
-    const meetingId = await getOrCreateMeetingId(c.env);
+    let meetingId = await getOrCreateMeetingId(c.env);
 
-    const result = await addParticipant(c.env, meetingId, {
-      name,
-      presetName,
-      customParticipantId,
-    });
+    let result;
+    try {
+      console.log("[RTC-DEBUG] addParticipant:", { role, presetName, name, customParticipantId, meetingId });
+      result = await addParticipant(c.env, meetingId, {
+        name,
+        presetName,
+        customParticipantId,
+      });
+    } catch {
+      // Meeting likely expired — create a fresh one and retry
+      console.log("[RTC-DEBUG] addParticipant failed, creating fresh meeting");
+      meetingId = await getOrCreateMeetingId(c.env, true);
+      console.log("[RTC-DEBUG] retrying addParticipant with new meetingId:", meetingId);
+      result = await addParticipant(c.env, meetingId, {
+        name,
+        presetName,
+        customParticipantId,
+      });
+    }
+    console.log("[RTC-DEBUG] addParticipant result:", { participantId: result.participantId, meetingId });
 
     return c.json({
       authToken: result.authToken,

@@ -133,7 +133,7 @@ function MeetingRoom({
     isHost ||
     remoteParticipants.some(
       (p) =>
-        p.presetName === "livestream_host" || p.videoEnabled || p.videoTrack
+        p.presetName === "group_call_host" || p.videoEnabled || p.videoTrack
     );
 
   return (

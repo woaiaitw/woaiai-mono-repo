@@ -29,15 +29,24 @@ export async function joinMeeting(
   name?: string,
   signal?: AbortSignal
 ): Promise<JoinResponse> {
+  const sessionId = role === "host" ? "host" : getSessionId();
+  const body = { role, name, sessionId };
+  console.log("[RTK-DEBUG] rtc-client joinMeeting request:", body);
   const res = await fetch(`${RTC_BASE}/api/rtc/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ role, name, sessionId: role === "host" ? "host" : getSessionId() }),
+    body: JSON.stringify(body),
     signal,
   });
-  if (!res.ok) throw new Error("Failed to join meeting");
-  return res.json();
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("[RTK-DEBUG] rtc-client joinMeeting FAILED: status=%d body=%s", res.status, text);
+    throw new Error("Failed to join meeting");
+  }
+  const result: JoinResponse = await res.json();
+  console.log("[RTK-DEBUG] rtc-client joinMeeting response:", { meetingId: result.meetingId, participantId: result.participantId });
+  return result;
 }
 
 export function getCaptionWsUrl(): string {
