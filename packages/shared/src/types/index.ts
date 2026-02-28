@@ -1,8 +1,11 @@
+export type UserRole = "owner" | "admin" | "speaker" | "user";
+
 export interface User {
   id: string;
   name: string;
   email: string;
   image?: string | null;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
