@@ -57,7 +57,12 @@ export function useCaptions(
       };
 
       ws.onclose = () => {
-        wsRef.current = null;
+        // Only null out the ref if it still points to THIS WebSocket.
+        // A newer connection may have already replaced it (e.g. React
+        // Strict Mode unmount/remount race).
+        if (wsRef.current === ws) {
+          wsRef.current = null;
+        }
         if (!disposed) {
           reconnectTimer = setTimeout(connect, 1000);
         }
