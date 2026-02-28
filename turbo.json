@@ -15,6 +15,13 @@
     "deploy": {
       "dependsOn": ["build"]
     },
+    "deploy:production": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "db:migrate:production": {
+      "cache": false
+    },
     "db:generate": {
       "cache": false
     },

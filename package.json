@@ -8,6 +8,8 @@
     "deploy": "turbo deploy",
     "db:generate": "turbo db:generate",
     "db:migrate:local": "turbo db:migrate:local",
+    "deploy:production": "turbo deploy:production",
+    "db:migrate:production": "turbo db:migrate:production",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e"
   },

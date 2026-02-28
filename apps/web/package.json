@@ -7,6 +7,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:production": "npm run build && wrangler deploy --env production",
     "test:e2e": "playwright test"
   },
   "dependencies": {

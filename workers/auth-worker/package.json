@@ -6,6 +6,8 @@
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
+    "deploy:production": "wrangler deploy --env production",
+    "db:migrate:production": "wrangler d1 migrations apply AUTH_DB --env production --remote",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply AUTH_DB --local",

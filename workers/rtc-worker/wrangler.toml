@@ -18,3 +18,22 @@ bindings = [
 [[migrations]]
 tag = "v1"
 new_classes = ["CaptionRoom"]
+
+[env.production]
+name = "rtc-worker-production"
+
+[env.production.vars]
+WEB_URL = "https://woaiai.tw"
+
+[env.production.durable_objects]
+bindings = [
+  { name = "CAPTION_ROOM", class_name = "CaptionRoom" }
+]
+
+[[env.production.migrations]]
+tag = "v1"
+new_classes = ["CaptionRoom"]
+
+[[env.production.routes]]
+pattern = "rtc.woaiai.tw"
+custom_domain = true

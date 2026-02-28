@@ -13,5 +13,22 @@ BETTER_AUTH_URL = "http://localhost:8788"
 [[d1_databases]]
 binding = "AUTH_DB"
 database_name = "auth-db"
-database_id = "YOUR_DATABASE_ID"
+database_id = "DATABASE_ID_HERE"
 migrations_dir = "drizzle"
+
+[env.production]
+name = "auth-worker-production"
+
+[env.production.vars]
+WEB_URL = "https://woaiai.tw"
+BETTER_AUTH_URL = "https://auth.woaiai.tw"
+
+[[env.production.d1_databases]]
+binding = "AUTH_DB"
+database_name = "auth-db"
+database_id = "8888c445-bbee-477d-93d9-a560eedfd8ed"
+migrations_dir = "drizzle"
+
+[[env.production.routes]]
+pattern = "auth.woaiai.tw"
+custom_domain = true
