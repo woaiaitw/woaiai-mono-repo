@@ -17,7 +17,7 @@ bindings = [
 
 [[migrations]]
 tag = "v1"
-new_classes = ["CaptionRoom"]
+new_sqlite_classes = ["CaptionRoom"]
 
 [env.production]
 name = "rtc-worker-production"
@@ -32,7 +32,7 @@ bindings = [
 
 [[env.production.migrations]]
 tag = "v1"
-new_classes = ["CaptionRoom"]
+new_sqlite_classes = ["CaptionRoom"]
 
 [[env.production.routes]]
 pattern = "rtc.woaiai.tw"
