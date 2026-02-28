@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useReducer, type Dispatch } from "react";
+import { useState, useReducer, type Dispatch } from "react";
 import {
   useRealtimeKitClient,
   RealtimeKitProvider,
 } from "@cloudflare/realtimekit-react";
 import type { ParticipantRole } from "@web-template/shared";
+import { DEFAULT_LANGUAGE } from "@web-template/shared";
 import { VideoGrid, type Participant } from "../components/VideoGrid";
 import { HostControls } from "../components/HostControls";
 import { CaptionOverlay } from "../components/CaptionOverlay";
@@ -25,12 +26,14 @@ import { useCaptions } from "../hooks/useCaptions";
 export const Route = createFileRoute("/meeting")({
   validateSearch: (search: Record<string, unknown>) => ({
     role: (search.role as ParticipantRole) || "viewer",
+    lang:
+      typeof search.lang === "string" ? search.lang : DEFAULT_LANGUAGE,
   }),
   component: MeetingPage,
 });
 
 function MeetingPage() {
-  const { role } = Route.useSearch();
+  const { role, lang } = Route.useSearch();
   const navigate = useNavigate();
   const [meeting, initMeeting] = useRealtimeKitClient();
   const [state, dispatch] = useReducer(meetingReducer, initialMeetingState);
@@ -75,6 +78,7 @@ function MeetingPage() {
       <MeetingRoom
         role={activeRole}
         meetingId={meetingId}
+        initialLanguage={lang}
         remoteParticipants={state.remoteParticipants}
         dispatch={dispatch}
       />
@@ -85,14 +89,17 @@ function MeetingPage() {
 function MeetingRoom({
   role,
   meetingId,
+  initialLanguage,
   remoteParticipants,
   dispatch,
 }: {
   role: ParticipantRole;
   meetingId: string;
+  initialLanguage: string;
   remoteParticipants: Participant[];
   dispatch: Dispatch<MeetingAction>;
 }) {
+  const [language, setLanguage] = useState(initialLanguage);
   const navigate = useNavigate();
   const roomState = useRoomJoin(dispatch);
   const joined = roomState === "joined";
@@ -107,7 +114,8 @@ function MeetingRoom({
 
   const { captions, interimText } = useCaptions(
     role,
-    isHost && joined ? (selfParticipant?.audioTrack ?? null) : null
+    isHost && joined ? (selfParticipant?.audioTrack ?? null) : null,
+    language
   );
 
   if (!joined) {
@@ -161,9 +169,11 @@ function MeetingRoom({
           audioEnabled={selfParticipant?.audioEnabled ?? false}
           videoEnabled={selfParticipant?.videoEnabled ?? false}
           screenShareEnabled={selfParticipant?.screenShareEnabled ?? false}
+          language={language}
           onToggleAudio={controls.toggleAudio}
           onToggleVideo={controls.toggleVideo}
           onToggleScreenShare={controls.toggleScreenShare}
+          onLanguageChange={setLanguage}
           onLeave={controls.leave}
         />
       ) : (

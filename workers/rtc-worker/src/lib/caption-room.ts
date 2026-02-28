@@ -15,13 +15,6 @@ interface Env {
 }
 
 // CF Workers fetch() requires https:// with Upgrade header, not wss://
-// Only encoding + sample_rate are required. Extra query params cause a 400
-// on the CF AI endpoint.
-const NOVA3_PARAMS = new URLSearchParams({
-  encoding: "linear16",
-  sample_rate: "48000",
-}).toString();
-
 const MAX_AUDIO_BUFFER = 50;
 
 /**
@@ -37,6 +30,7 @@ export class CaptionRoom {
   private reconnectAttempts = 0;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
   private audioBuffer: ArrayBuffer[] = [];
+  private language = "multi";
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
@@ -64,6 +58,7 @@ export class CaptionRoom {
     }
 
     const role = url.searchParams.get("role") || "viewer";
+    const lang = url.searchParams.get("lang");
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
@@ -72,6 +67,11 @@ export class CaptionRoom {
     // webSocketMessage() without maintaining an in-memory Set.
     const tags = role === "host" ? ["host"] : [];
     this.state.acceptWebSocket(server, tags);
+
+    // Accept initial language from the host's query string
+    if (role === "host" && lang) {
+      this.language = lang;
+    }
 
     // Connect to Deepgram when first host joins
     if (role === "host" && !this.deepgramWs) {
@@ -96,8 +96,20 @@ export class CaptionRoom {
       } else if (this.audioBuffer.length < MAX_AUDIO_BUFFER) {
         this.audioBuffer.push(data);
       }
+      return;
     }
-    // Ignore text messages (captions are generated server-side)
+
+    // Text messages from hosts — currently only "set-language"
+    const tags = this.state.getTags(ws);
+    if (!tags.includes("host")) return;
+    try {
+      const msg = JSON.parse(data);
+      if (msg.type === "set-language" && typeof msg.language === "string") {
+        this.changeLanguage(msg.language);
+      }
+    } catch {
+      // Ignore non-JSON text messages
+    }
   }
 
   /** Hibernation API: called when an accepted WebSocket closes */
@@ -113,8 +125,31 @@ export class CaptionRoom {
     // Nothing to do — webSocketClose will also fire
   }
 
+  private changeLanguage(lang: string) {
+    if (lang === this.language) return;
+    this.language = lang;
+    // Cycle the Deepgram connection with the new language.
+    // Audio arriving while disconnected is buffered (up to MAX_AUDIO_BUFFER)
+    // and flushed when the new connection opens.
+    if (this.deepgramWs) {
+      this.disconnectDeepgram();
+    }
+    this.connectDeepgram().catch((err) => {
+      console.error("Failed to reconnect Deepgram with new language:", err);
+      this.scheduleReconnect();
+    });
+  }
+
+  private buildDeepgramParams(): string {
+    return new URLSearchParams({
+      encoding: "linear16",
+      sample_rate: "48000",
+      language: this.language,
+    }).toString();
+  }
+
   private async connectDeepgram() {
-    const url = `https://api.cloudflare.com/client/v4/accounts/${this.env.CF_ACCOUNT_ID}/ai/run/@cf/deepgram/nova-3?${NOVA3_PARAMS}`;
+    const url = `https://api.cloudflare.com/client/v4/accounts/${this.env.CF_ACCOUNT_ID}/ai/run/@cf/deepgram/nova-3?${this.buildDeepgramParams()}`;
 
     const resp = await fetch(url, {
       headers: {
@@ -155,7 +190,7 @@ export class CaptionRoom {
     });
 
     this.startKeepAlive();
-    console.log("Connected to Deepgram Nova-3 via Cloudflare AI");
+    console.log(`Connected to Deepgram Nova-3 (language=${this.language})`);
   }
 
   private scheduleReconnect() {

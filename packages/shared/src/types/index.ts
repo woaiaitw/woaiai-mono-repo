@@ -39,3 +39,34 @@ export interface CaptionMessage {
 }
 
 export type ParticipantRole = "host" | "viewer";
+
+// Transcription language support
+export interface LanguageOption {
+  code: string;
+  label: string;
+}
+
+export const DEFAULT_LANGUAGE = "multi";
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: "multi", label: "Auto-detect" },
+  { code: "en", label: "English" },
+  { code: "zh", label: "Chinese" },
+  { code: "ja", label: "Japanese" },
+  { code: "ko", label: "Korean" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+  { code: "de", label: "German" },
+  { code: "pt", label: "Portuguese" },
+  { code: "it", label: "Italian" },
+  { code: "nl", label: "Dutch" },
+  { code: "hi", label: "Hindi" },
+  { code: "ru", label: "Russian" },
+  { code: "ar", label: "Arabic" },
+  { code: "id", label: "Indonesian" },
+  { code: "tr", label: "Turkish" },
+  { code: "sv", label: "Swedish" },
+  { code: "da", label: "Danish" },
+  { code: "no", label: "Norwegian" },
+  { code: "pl", label: "Polish" },
+];
