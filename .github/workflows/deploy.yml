@@ -174,11 +174,27 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm deploy:production
+
+      - name: Deploy auth-worker
+        run: |
+          cd workers/auth-worker
+          npx wrangler deploy --env production
+
       - name: Apply production D1 migrations
         run: |
           cd workers/auth-worker
           npx wrangler d1 migrations apply AUTH_DB --env production --remote
+
+      - name: Deploy rtc-worker
+        run: |
+          cd workers/rtc-worker
+          npx wrangler deploy --env production
+
+      - name: Build and deploy web
+        run: |
+          cd apps/web
+          npm run build
+          npx wrangler deploy --env production
 
   cleanup-preview:
     name: Cleanup Preview
