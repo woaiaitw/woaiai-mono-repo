@@ -36,7 +36,7 @@ function HomePage() {
           </div>
           <Link
             to="/meeting"
-            search={{ role: "viewer" }}
+            search={{ role: "viewer", lang: DEFAULT_LANGUAGE }}
             className="inline-block px-8 py-4 border border-gray-600 text-gray-200 text-lg font-semibold rounded-xl hover:bg-gray-800 transition-colors"
           >
             Join as Viewer
