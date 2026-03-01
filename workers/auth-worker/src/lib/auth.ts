@@ -20,6 +20,16 @@ export function getAuth(env: Env) {
         verification: schema.verifications,
       },
     }),
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: false,
+          defaultValue: "user",
+          input: false,
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
     },

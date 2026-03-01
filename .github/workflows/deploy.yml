@@ -99,6 +99,36 @@ jobs:
           echo "${{ secrets.GOOGLE_CLIENT_ID_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_ID --name ${{ steps.preview.outputs.AUTH_NAME }}
           echo "${{ secrets.GOOGLE_CLIENT_SECRET_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET --name ${{ steps.preview.outputs.AUTH_NAME }}
 
+      - name: Seed preview database
+        run: |
+          AUTH_URL="${{ steps.preview.outputs.AUTH_URL }}"
+          WEB_URL="${{ steps.preview.outputs.WEB_URL }}"
+          # Wait for auth worker to be reachable after secrets are set
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sf "$AUTH_URL/health" > /dev/null 2>&1; then break; fi
+            echo "Waiting for auth worker..."
+            sleep 5
+          done
+          # Sign up seed users (Origin header required for CSRF validation)
+          for role in owner admin speaker user; do
+            NAME="$(echo "${role}" | sed 's/./\U&/')"
+            echo "Signing up ${role}@example.com..."
+            HTTP_CODE=$(curl -s -o /tmp/signup-${role}.json -w "%{http_code}" \
+              -X POST "$AUTH_URL/api/auth/sign-up/email" \
+              -H "Content-Type: application/json" \
+              -H "Origin: $WEB_URL" \
+              -d "{\"email\":\"${role}@example.com\",\"password\":\"password\",\"name\":\"${NAME}\"}")
+            echo "  -> HTTP $HTTP_CODE: $(cat /tmp/signup-${role}.json 2>/dev/null | head -c 200)"
+          done
+          # Update roles via D1
+          cd workers/auth-worker
+          for role in owner admin speaker; do
+            echo "Setting role ${role} for ${role}@example.com..."
+            npx wrangler d1 execute AUTH_DB --remote \
+              --command="UPDATE user SET role = '${role}' WHERE email = '${role}@example.com';" \
+              || true
+          done
+
       - name: Deploy rtc-worker
         run: |
           cd workers/rtc-worker

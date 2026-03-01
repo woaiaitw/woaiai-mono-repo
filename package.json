@@ -8,6 +8,7 @@
     "deploy": "turbo deploy",
     "db:generate": "turbo db:generate",
     "db:migrate:local": "turbo db:migrate:local",
+    "db:seed": "turbo db:seed",
     "deploy:production": "turbo deploy:production",
     "db:migrate:production": "turbo db:migrate:production",
     "test": "turbo test",
