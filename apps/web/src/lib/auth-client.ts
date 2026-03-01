@@ -1,5 +1,8 @@
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import {
+  inferAdditionalFields,
+  magicLinkClient,
+} from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_AUTH_WORKER_URL ?? "http://localhost:8788",
@@ -17,5 +20,6 @@ export const authClient = createAuthClient({
         },
       },
     }),
+    magicLinkClient(),
   ],
 });
