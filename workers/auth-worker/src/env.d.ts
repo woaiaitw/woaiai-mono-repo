@@ -1,5 +1,6 @@
 export interface Env {
   AUTH_DB: D1Database;
+  EVENTS_DB: D1Database;
   BETTER_AUTH_URL: string;
   BETTER_AUTH_SECRET: string;
   GOOGLE_CLIENT_ID: string;

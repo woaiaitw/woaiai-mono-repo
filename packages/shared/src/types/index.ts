@@ -43,6 +43,20 @@ export interface CaptionMessage {
 
 export type ParticipantRole = "host" | "viewer";
 
+// Streaming events
+export type EventStatus = "upcoming" | "live" | "ended";
+
+export interface StreamingEvent {
+  id: string;
+  title: string;
+  description: string;
+  scheduledAt: string;
+  status: EventStatus;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Transcription language support
 export interface LanguageOption {
   code: string;

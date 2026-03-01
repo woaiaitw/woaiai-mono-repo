@@ -8,6 +8,9 @@ export default defineWorkersProject(async () => {
   const migrationsPath = path.join(__dirname, "drizzle");
   const migrations = await readD1Migrations(migrationsPath);
 
+  const eventsMigrationsPath = path.join(__dirname, "drizzle-events");
+  const eventsMigrations = await readD1Migrations(eventsMigrationsPath);
+
   return {
     test: {
       setupFiles: ["./test/apply-migrations.ts"],
@@ -26,6 +29,7 @@ export default defineWorkersProject(async () => {
               GOOGLE_CLIENT_ID: "test-google-client-id",
               GOOGLE_CLIENT_SECRET: "test-google-client-secret",
               TEST_MIGRATIONS: migrations,
+              TEST_EVENTS_MIGRATIONS: eventsMigrations,
             },
           },
         },

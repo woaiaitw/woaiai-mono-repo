@@ -16,6 +16,12 @@ database_name = "auth-db"
 database_id = "DATABASE_ID_HERE"
 migrations_dir = "drizzle"
 
+[[d1_databases]]
+binding = "EVENTS_DB"
+database_name = "events-db"
+database_id = "EVENTS_DATABASE_ID_HERE"
+migrations_dir = "drizzle-events"
+
 [env.production]
 name = "auth-worker-production"
 
@@ -28,6 +34,12 @@ binding = "AUTH_DB"
 database_name = "auth-db"
 database_id = "8888c445-bbee-477d-93d9-a560eedfd8ed"
 migrations_dir = "drizzle"
+
+[[env.production.d1_databases]]
+binding = "EVENTS_DB"
+database_name = "events-db"
+database_id = "EVENTS_DATABASE_ID_HERE"
+migrations_dir = "drizzle-events"
 
 [[env.production.routes]]
 pattern = "auth.woaiai.tw"

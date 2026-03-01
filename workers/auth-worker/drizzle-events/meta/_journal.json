@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1772400000000,
+      "tag": "0000_create_streaming_event",
+      "breakpoints": true
+    }
+  ]
+}
