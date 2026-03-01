@@ -1,10 +1,14 @@
+import { LanguageSelect } from "./LanguageSelect";
+
 interface HostControlsProps {
   audioEnabled: boolean;
   videoEnabled: boolean;
   screenShareEnabled: boolean;
+  language: string;
   onToggleAudio: () => void;
   onToggleVideo: () => void;
   onToggleScreenShare: () => void;
+  onLanguageChange: (language: string) => void;
   onLeave: () => void;
 }
 
@@ -12,9 +16,11 @@ export function HostControls({
   audioEnabled,
   videoEnabled,
   screenShareEnabled,
+  language,
   onToggleAudio,
   onToggleVideo,
   onToggleScreenShare,
+  onLanguageChange,
   onLeave,
 }: HostControlsProps) {
   return (
@@ -49,6 +55,11 @@ export function HostControls({
       >
         {screenShareEnabled ? "Stop Sharing" : "Share Screen"}
       </button>
+      <LanguageSelect
+        value={language}
+        onChange={onLanguageChange}
+        className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+      />
       <button
         onClick={onLeave}
         className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"

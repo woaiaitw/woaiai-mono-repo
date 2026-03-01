@@ -11,12 +11,15 @@ export interface CaptionEntry {
 
 export function useCaptions(
   role: string,
-  audioTrack: MediaStreamTrack | null
+  audioTrack: MediaStreamTrack | null,
+  language: string
 ) {
   const [captions, setCaptions] = useState<CaptionEntry[]>([]);
   const [interimText, setInterimText] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
   const captionIdRef = useRef(0);
+  const languageRef = useRef(language);
+  languageRef.current = language;
   const isHost = role === "host";
 
   // Effect 1: WebSocket connection with auto-reconnect
@@ -27,7 +30,9 @@ export function useCaptions(
 
     function connect() {
       if (disposed) return;
-      const url = `${getCaptionWsUrl()}?role=${role}`;
+      // Read from ref so reconnections always use the latest language
+      const lang = languageRef.current;
+      const url = `${getCaptionWsUrl()}?role=${role}&lang=${encodeURIComponent(lang)}`;
       ws = new WebSocket(url);
       wsRef.current = ws;
 
@@ -134,6 +139,21 @@ export function useCaptions(
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Effect 4: Notify server when the host changes language mid-stream.
+  // The initial language is baked into the WS URL (Effect 1), so this
+  // effect only fires on subsequent changes. Sending the same language
+  // twice is harmless — the backend no-ops if it matches the current value.
+  const prevLangRef = useRef(language);
+  useEffect(() => {
+    if (!isHost) return;
+    if (prevLangRef.current === language) return;
+    prevLangRef.current = language;
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "set-language", language }));
+    }
+  }, [isHost, language]);
 
   return { captions, interimText };
 }

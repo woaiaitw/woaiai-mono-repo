@@ -111,6 +111,7 @@ jobs:
           echo "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" | npx wrangler secret put CF_ACCOUNT_ID --name ${{ steps.preview.outputs.RTC_NAME }}
           echo "${{ secrets.CLOUDFLARE_API_TOKEN }}" | npx wrangler secret put CF_API_TOKEN --name ${{ steps.preview.outputs.RTC_NAME }}
           echo "${{ secrets.REALTIME_APP_ID }}" | npx wrangler secret put REALTIME_APP_ID --name ${{ steps.preview.outputs.RTC_NAME }}
+          echo "${{ secrets.DEEPGRAM_API_KEY }}" | npx wrangler secret put DEEPGRAM_API_KEY --name ${{ steps.preview.outputs.RTC_NAME }}
 
       - name: Build and deploy web
         env:

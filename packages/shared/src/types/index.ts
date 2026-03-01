@@ -39,3 +39,16 @@ export interface CaptionMessage {
 }
 
 export type ParticipantRole = "host" | "viewer";
+
+// Transcription language support
+export interface LanguageOption {
+  code: string;
+  label: string;
+}
+
+export const DEFAULT_LANGUAGE = "en";
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: "en", label: "English" },
+  { code: "zh-TW", label: "Chinese" },
+];
