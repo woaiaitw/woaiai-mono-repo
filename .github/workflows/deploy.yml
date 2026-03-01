@@ -99,6 +99,29 @@ jobs:
           echo "${{ secrets.GOOGLE_CLIENT_ID_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_ID --name ${{ steps.preview.outputs.AUTH_NAME }}
           echo "${{ secrets.GOOGLE_CLIENT_SECRET_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET --name ${{ steps.preview.outputs.AUTH_NAME }}
 
+      - name: Seed preview database
+        run: |
+          AUTH_URL="${{ steps.preview.outputs.AUTH_URL }}"
+          # Wait for auth worker to be reachable
+          for i in 1 2 3 4 5; do
+            if curl -sf "$AUTH_URL/health" > /dev/null 2>&1; then break; fi
+            sleep 3
+          done
+          # Sign up seed users
+          for role in owner admin speaker user; do
+            curl -sf -X POST "$AUTH_URL/api/auth/sign-up/email" \
+              -H "Content-Type: application/json" \
+              -d "{\"email\":\"${role}@example.com\",\"password\":\"password\",\"name\":\"${role^}\"}" \
+              > /dev/null 2>&1 || true
+          done
+          # Update roles via D1
+          cd workers/auth-worker
+          for role in owner admin speaker; do
+            npx wrangler d1 execute AUTH_DB --remote \
+              --command="UPDATE user SET role = '${role}' WHERE email = '${role}@example.com';" \
+              || true
+          done
+
       - name: Deploy rtc-worker
         run: |
           cd workers/rtc-worker
