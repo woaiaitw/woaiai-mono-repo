@@ -1,8 +1,13 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { magicLink } from "better-auth/plugins";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema";
 import type { Env } from "../env.d.ts";
+
+// Captured magic link URLs keyed by email, used by the speaker-invite
+// endpoint to return the generated URL to the admin.
+export const capturedMagicLinkUrls = new Map<string, string>();
 
 export function getAuth(env: Env) {
   const db = drizzle(env.AUTH_DB);
@@ -33,6 +38,13 @@ export function getAuth(env: Env) {
     emailAndPassword: {
       enabled: true,
     },
+    plugins: [
+      magicLink({
+        sendMagicLink: async ({ email, url }) => {
+          capturedMagicLinkUrls.set(email, url);
+        },
+      }),
+    ],
     socialProviders: {
       google: {
         clientId: env.GOOGLE_CLIENT_ID,
