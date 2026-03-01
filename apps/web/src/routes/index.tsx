@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { DEFAULT_LANGUAGE } from "@web-template/shared";
 import { LanguageSelect } from "../components/LanguageSelect";
+import { SpeakerInvite } from "../components/SpeakerInvite";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -42,6 +43,7 @@ function HomePage() {
             Join as Viewer
           </Link>
         </div>
+        <SpeakerInvite />
       </div>
     </div>
   );
