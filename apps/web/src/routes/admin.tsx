@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { authClient } from "~/lib/auth-client";
 import { useState, useEffect, useCallback } from "react";
 
@@ -22,7 +22,6 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const navigate = useNavigate();
   const { data: session, isPending: sessionPending } =
     authClient.useSession();
 
@@ -136,17 +135,9 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
-            User Management
-          </h1>
-          <Link
-            to="/dashboard"
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          User Management
+        </h1>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">

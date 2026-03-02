@@ -3,9 +3,11 @@ import {
   HeadContent,
   Scripts,
   createRootRoute,
+  useRouterState,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import appCss from "~/styles/app.css?url";
+import { Header } from "~/components/Header";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -19,9 +21,17 @@ export const Route = createRootRoute({
   component: RootComponent,
 });
 
+/** Routes where the header should be hidden (full-screen experiences). */
+const HEADERLESS_ROUTES = ["/meeting"];
+
 function RootComponent() {
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const showHeader = !HEADERLESS_ROUTES.includes(currentPath);
+
   return (
     <RootDocument>
+      {showHeader && <Header />}
       <Outlet />
     </RootDocument>
   );

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { authClient } from "~/lib/auth-client";
 
@@ -136,14 +136,6 @@ function LoginPage() {
             Continue with Google
           </span>
         </button>
-        <div className="text-center">
-          <Link
-            to="/"
-            className="text-sm text-blue-600 hover:text-blue-700"
-          >
-            Back to home
-          </Link>
-        </div>
       </div>
     </div>
   );
