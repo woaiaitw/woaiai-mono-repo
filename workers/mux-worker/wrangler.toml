@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [dev]
 port = 8790
-inspector_port = 9231
+inspector_port = 9242
 
 [vars]
 WEB_URL = "http://localhost:3000"
