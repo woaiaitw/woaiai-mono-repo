@@ -55,3 +55,19 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
   { code: "en", label: "English" },
   { code: "zh-TW", label: "Chinese" },
 ];
+
+// Mux streaming types
+export interface MuxStreamInfo {
+  id: string;
+  streamKey?: string;
+  playbackId: string;
+  status: "idle" | "active" | "disabled";
+  rtmpUrl?: string;
+}
+
+export interface MuxStreamListItem {
+  id: string;
+  playbackId: string;
+  status: "idle" | "active" | "disabled";
+  createdAt: string;
+}

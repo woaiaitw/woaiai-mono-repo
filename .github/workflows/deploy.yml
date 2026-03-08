@@ -57,10 +57,12 @@ jobs:
           echo "WEB_NAME=web-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "AUTH_NAME=auth-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "RTC_NAME=rtc-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "MUX_NAME=mux-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "DB_NAME=auth-db-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "WEB_URL=https://web-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
           echo "AUTH_URL=https://auth-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
           echo "RTC_URL=https://rtc-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
+          echo "MUX_URL=https://mux-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
 
       - name: Create D1 database if needed
         run: |
@@ -143,10 +145,24 @@ jobs:
           echo "${{ secrets.REALTIME_APP_ID }}" | npx wrangler secret put REALTIME_APP_ID --name ${{ steps.preview.outputs.RTC_NAME }}
           echo "${{ secrets.DEEPGRAM_API_KEY }}" | npx wrangler secret put DEEPGRAM_API_KEY --name ${{ steps.preview.outputs.RTC_NAME }}
 
+      - name: Deploy mux-worker
+        run: |
+          cd workers/mux-worker
+          npx wrangler deploy \
+            --name ${{ steps.preview.outputs.MUX_NAME }} \
+            --var WEB_URL:${{ steps.preview.outputs.WEB_URL }}
+
+      - name: Set mux-worker secrets
+        run: |
+          echo "${{ secrets.MUX_TOKEN_ID }}" | npx wrangler secret put MUX_TOKEN_ID --name ${{ steps.preview.outputs.MUX_NAME }}
+          echo "${{ secrets.MUX_TOKEN_SECRET }}" | npx wrangler secret put MUX_TOKEN_SECRET --name ${{ steps.preview.outputs.MUX_NAME }}
+          echo "${{ secrets.MUX_WEBHOOK_SECRET }}" | npx wrangler secret put MUX_WEBHOOK_SECRET --name ${{ steps.preview.outputs.MUX_NAME }}
+
       - name: Build and deploy web
         env:
           VITE_AUTH_WORKER_URL: ${{ steps.preview.outputs.AUTH_URL }}
           VITE_RTC_WORKER_URL: ${{ steps.preview.outputs.RTC_URL }}
+          VITE_MUX_WORKER_URL: ${{ steps.preview.outputs.MUX_URL }}
         run: |
           cd apps/web
           npm run build
@@ -167,6 +183,7 @@ jobs:
               '| Web | ${{ steps.preview.outputs.WEB_URL }} |',
               '| Auth | ${{ steps.preview.outputs.AUTH_URL }} |',
               '| RTC | ${{ steps.preview.outputs.RTC_URL }} |',
+              '| Mux | ${{ steps.preview.outputs.MUX_URL }} |',
               '',
               '_Deployed from commit ${{ github.sha }}_',
             ].join('\n');
@@ -225,10 +242,16 @@ jobs:
           cd workers/rtc-worker
           npx wrangler deploy --env production
 
+      - name: Deploy mux-worker
+        run: |
+          cd workers/mux-worker
+          npx wrangler deploy --env production
+
       - name: Build and deploy web
         env:
           VITE_AUTH_WORKER_URL: https://auth.woaiai.tw
           VITE_RTC_WORKER_URL: https://rtc.woaiai.tw
+          VITE_MUX_WORKER_URL: https://mux.woaiai.tw
         run: |
           cd apps/web
           npm run build
@@ -250,6 +273,7 @@ jobs:
           npx wrangler delete --name web-pr-$PR_NUMBER --force || true
           npx wrangler delete --name auth-worker-pr-$PR_NUMBER --force || true
           npx wrangler delete --name rtc-worker-pr-$PR_NUMBER --force || true
+          npx wrangler delete --name mux-worker-pr-$PR_NUMBER --force || true
 
       - name: Delete preview D1 database
         run: |
