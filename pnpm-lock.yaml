@@ -122,6 +122,25 @@ importers:
         specifier: ^4
         version: 4.65.0(@cloudflare/workers-types@4.20260214.0)
 
+  workers/mux-worker:
+    dependencies:
+      '@web-template/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      hono:
+        specifier: ^4
+        version: 4.11.9
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4
+        version: 4.20260214.0
+      typescript:
+        specifier: ^5.7
+        version: 5.9.3
+      wrangler:
+        specifier: ^4
+        version: 4.66.0(@cloudflare/workers-types@4.20260214.0)
+
   workers/rtc-worker:
     dependencies:
       '@web-template/shared':
