@@ -8,9 +8,23 @@ import {
   deleteLiveStream,
   resetStreamKey,
 } from "./lib/mux-api";
+import {
+  createStream,
+  getStream,
+  getStreamByMuxId,
+  listStreams,
+  updateStreamMuxIds,
+  updateStreamStatus,
+  updateStreamAsset,
+  updateStreamKey,
+  deleteStream,
+} from "./lib/streams-db";
+import { requireHost, type AuthUser } from "./lib/auth";
 import type { Env } from "./env.d.ts";
 
-const app = new Hono<{ Bindings: Env }>();
+type AppEnv = { Bindings: Env; Variables: { user: AuthUser } };
+
+const app = new Hono<AppEnv>();
 
 app.use(
   "/api/mux/*",
@@ -26,7 +40,163 @@ app.use(
   })
 );
 
-// Create a new live stream
+// ---------------------------------------------------------------------------
+// Stream Events — CRUD for scheduled/live/ended streams (D1-backed)
+// ---------------------------------------------------------------------------
+
+// Schedule a new stream (host only)
+app.post("/api/mux/events", requireHost(), async (c) => {
+  const user = c.get("user");
+  const body = await c.req.json<{ title: string; description?: string; scheduled_at: string }>();
+
+  if (!body.title || !body.scheduled_at) {
+    return c.json({ error: "title and scheduled_at are required" }, 400);
+  }
+
+  const id = crypto.randomUUID();
+  const stream = await createStream(c.env.MUX_DB, {
+    id,
+    title: body.title,
+    description: body.description,
+    scheduled_at: body.scheduled_at,
+    created_by: user.id,
+  });
+
+  return c.json(stream, 201);
+});
+
+// List streams — public (viewers see live/upcoming/past)
+app.get("/api/mux/events", async (c) => {
+  const statusParam = c.req.query("status");
+  const statusFilter = statusParam ? statusParam.split(",") : undefined;
+  const streams = await listStreams(c.env.MUX_DB, statusFilter);
+
+  // Strip sensitive fields for public consumers
+  const publicStreams = streams.map(({ mux_stream_key, ...rest }) => rest);
+  return c.json({ streams: publicStreams });
+});
+
+// Get single stream — public
+app.get("/api/mux/events/:id", async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  const { mux_stream_key, ...publicStream } = stream;
+  return c.json(publicStream);
+});
+
+// Get stream details for host (includes stream key + OBS info)
+app.get("/api/mux/events/:id/host", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  return c.json({
+    ...stream,
+    rtmpUrl: "rtmps://global-live.mux.com/app",
+  });
+});
+
+// Provision Mux live stream (lazy — called when host opens dashboard)
+app.put("/api/mux/events/:id/provision", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  // Already provisioned
+  if (stream.mux_stream_id) {
+    return c.json({
+      ...stream,
+      rtmpUrl: "rtmps://global-live.mux.com/app",
+    });
+  }
+
+  const muxStream = await createLiveStream(c.env);
+  const playbackId = muxStream.playback_ids[0]?.id ?? "";
+
+  await updateStreamMuxIds(c.env.MUX_DB, stream.id, muxStream.id, playbackId, muxStream.stream_key);
+
+  const updated = await getStream(c.env.MUX_DB, stream.id);
+  return c.json({
+    ...updated,
+    rtmpUrl: "rtmps://global-live.mux.com/app",
+  });
+});
+
+// Go live — transition from preview to live
+app.put("/api/mux/events/:id/go-live", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  if (stream.status !== "preview") {
+    return c.json({ error: `Cannot go live from status: ${stream.status}` }, 400);
+  }
+
+  await updateStreamStatus(c.env.MUX_DB, stream.id, "live");
+  return c.json({ success: true });
+});
+
+// End stream
+app.put("/api/mux/events/:id/end", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  if (stream.status !== "live" && stream.status !== "preview") {
+    return c.json({ error: `Cannot end stream with status: ${stream.status}` }, 400);
+  }
+
+  // Complete the Mux live stream if provisioned
+  if (stream.mux_stream_id) {
+    try {
+      await completeLiveStream(c.env, stream.mux_stream_id);
+    } catch (e) {
+      console.error("[END-STREAM] Mux complete failed:", e);
+    }
+  }
+
+  await updateStreamStatus(c.env.MUX_DB, stream.id, "ended", new Date().toISOString());
+  return c.json({ success: true });
+});
+
+// Delete a scheduled stream (host only, only if not live)
+app.delete("/api/mux/events/:id", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  if (stream.status === "live") {
+    return c.json({ error: "Cannot delete a live stream — end it first" }, 400);
+  }
+
+  // Clean up Mux stream if provisioned
+  if (stream.mux_stream_id) {
+    try {
+      await deleteLiveStream(c.env, stream.mux_stream_id);
+    } catch (e) {
+      console.error("[DELETE-STREAM] Mux delete failed:", e);
+    }
+  }
+
+  await deleteStream(c.env.MUX_DB, stream.id);
+  return c.json({ success: true });
+});
+
+// Reset stream key for a scheduled stream
+app.post("/api/mux/events/:id/reset-key", requireHost(), async (c) => {
+  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  if (!stream) return c.json({ error: "Not found" }, 404);
+
+  if (!stream.mux_stream_id) {
+    return c.json({ error: "Stream not provisioned yet" }, 400);
+  }
+
+  const muxStream = await resetStreamKey(c.env, stream.mux_stream_id);
+  await updateStreamKey(c.env.MUX_DB, stream.id, muxStream.stream_key);
+
+  return c.json({ streamKey: muxStream.stream_key });
+});
+
+// ---------------------------------------------------------------------------
+// Legacy Mux proxy routes (direct Mux API access — kept for backwards compat)
+// ---------------------------------------------------------------------------
+
 app.post("/api/mux/streams", async (c) => {
   try {
     const stream = await createLiveStream(c.env);
@@ -43,7 +213,6 @@ app.post("/api/mux/streams", async (c) => {
   }
 });
 
-// List all live streams
 app.get("/api/mux/streams", async (c) => {
   try {
     const streams = await listLiveStreams(c.env);
@@ -61,7 +230,6 @@ app.get("/api/mux/streams", async (c) => {
   }
 });
 
-// Get stream status (public — used by viewer page to check if stream is live)
 app.get("/api/mux/streams/:id", async (c) => {
   try {
     const stream = await getLiveStream(c.env, c.req.param("id"));
@@ -76,7 +244,6 @@ app.get("/api/mux/streams/:id", async (c) => {
   }
 });
 
-// End a stream
 app.put("/api/mux/streams/:id/complete", async (c) => {
   try {
     await completeLiveStream(c.env, c.req.param("id"));
@@ -87,7 +254,6 @@ app.put("/api/mux/streams/:id/complete", async (c) => {
   }
 });
 
-// Delete a stream
 app.delete("/api/mux/streams/:id", async (c) => {
   try {
     await deleteLiveStream(c.env, c.req.param("id"));
@@ -98,7 +264,6 @@ app.delete("/api/mux/streams/:id", async (c) => {
   }
 });
 
-// Reset stream key
 app.post("/api/mux/streams/:id/reset-key", async (c) => {
   try {
     const stream = await resetStreamKey(c.env, c.req.param("id"));
@@ -111,31 +276,54 @@ app.post("/api/mux/streams/:id/reset-key", async (c) => {
   }
 });
 
+// ---------------------------------------------------------------------------
 // Webhook receiver for Mux events
+// ---------------------------------------------------------------------------
+
 app.post("/api/mux/webhooks", async (c) => {
   try {
     const body = await c.req.json();
     const eventType = body.type as string;
+    const muxStreamId = body.data?.id as string | undefined;
 
-    console.log(`[MUX-WEBHOOK] ${eventType}`, JSON.stringify(body.data?.id));
+    console.log(`[MUX-WEBHOOK] ${eventType}`, JSON.stringify(muxStreamId));
 
-    // Handle key events — extend as needed
     switch (eventType) {
       case "video.live_stream.connected":
-        console.log("[MUX] Stream connected:", body.data?.id);
+        console.log("[MUX] Stream connected:", muxStreamId);
         break;
-      case "video.live_stream.recording":
-        console.log("[MUX] Stream recording:", body.data?.id);
+
+      case "video.live_stream.active": {
+        // OBS is sending video — transition scheduled → preview
+        if (muxStreamId) {
+          const stream = await getStreamByMuxId(c.env.MUX_DB, muxStreamId);
+          if (stream && stream.status === "scheduled") {
+            await updateStreamStatus(c.env.MUX_DB, stream.id, "preview");
+            console.log(`[MUX] Stream ${stream.id} → preview`);
+          }
+        }
         break;
-      case "video.live_stream.active":
-        console.log("[MUX] Stream is live:", body.data?.id);
-        break;
+      }
+
       case "video.live_stream.idle":
-        console.log("[MUX] Stream went idle:", body.data?.id);
+        console.log("[MUX] Stream went idle:", muxStreamId);
         break;
-      case "video.asset.ready":
-        console.log("[MUX] VOD asset ready:", body.data?.id);
+
+      case "video.live_stream.recording":
+        console.log("[MUX] Stream recording:", muxStreamId);
         break;
+
+      case "video.asset.ready": {
+        // VOD asset is ready — store the asset ID
+        const assetId = body.data?.id as string | undefined;
+        const liveStreamId = body.data?.live_stream_id as string | undefined;
+        if (assetId && liveStreamId) {
+          await updateStreamAsset(c.env.MUX_DB, liveStreamId, assetId);
+          console.log(`[MUX] VOD asset ${assetId} stored for stream ${liveStreamId}`);
+        }
+        break;
+      }
+
       default:
         console.log("[MUX] Unhandled event:", eventType);
     }

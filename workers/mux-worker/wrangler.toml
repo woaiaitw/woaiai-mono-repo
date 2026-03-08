@@ -9,12 +9,26 @@ inspector_port = 9242
 
 [vars]
 WEB_URL = "http://localhost:3000"
+AUTH_WORKER_URL = "http://localhost:8788"
+
+[[d1_databases]]
+binding = "MUX_DB"
+database_name = "mux-db"
+database_id = "DATABASE_ID_HERE"
+migrations_dir = "migrations"
 
 [env.production]
 name = "mux-worker-production"
 
 [env.production.vars]
 WEB_URL = "https://woaiai.tw"
+AUTH_WORKER_URL = "https://auth.woaiai.tw"
+
+[[env.production.d1_databases]]
+binding = "MUX_DB"
+database_name = "mux-db"
+database_id = "DATABASE_ID_HERE"
+migrations_dir = "migrations"
 
 [[env.production.routes]]
 pattern = "mux.woaiai.tw"
