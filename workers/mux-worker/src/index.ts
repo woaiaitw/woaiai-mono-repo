@@ -98,9 +98,24 @@ app.get("/api/mux/events/:id", async (c) => {
 });
 
 // Get stream details for host (includes stream key + OBS info)
+// Also auto-detects when OBS is streaming via Mux API polling
 app.get("/api/mux/events/:id/host", requireHost(), async (c) => {
-  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  let stream = await getStream(c.env.MUX_DB, c.req.param("id"));
   if (!stream) return c.json({ error: "Not found" }, 404);
+
+  // Auto-detect OBS streaming: if DB says "scheduled" but Mux says "active", go live
+  if (stream.status === "scheduled" && stream.mux_stream_id) {
+    try {
+      const muxStream = await getLiveStream(c.env, stream.mux_stream_id);
+      if (muxStream.status === "active") {
+        await updateStreamStatus(c.env.MUX_DB, stream.id, "live");
+        stream = (await getStream(c.env.MUX_DB, stream.id))!;
+        console.log(`[AUTO-DETECT] Stream ${stream.id} → live (OBS active)`);
+      }
+    } catch (e) {
+      console.error("[AUTO-DETECT] Mux API check failed:", e);
+    }
+  }
 
   return c.json({
     ...stream,
@@ -138,7 +153,7 @@ app.put("/api/mux/events/:id/go-live", requireHost(), async (c) => {
   const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
   if (!stream) return c.json({ error: "Not found" }, 404);
 
-  if (stream.status !== "preview") {
+  if (stream.status !== "preview" && stream.status !== "scheduled") {
     return c.json({ error: `Cannot go live from status: ${stream.status}` }, 400);
   }
 

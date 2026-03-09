@@ -322,7 +322,8 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                   Provision Stream
                 </button>
               )}
-              {selectedEvent.status === "preview" && (
+              {(selectedEvent.status === "preview" ||
+                (selectedEvent.status === "scheduled" && selectedEvent.mux_stream_id)) && (
                 <button
                   onClick={handleGoLive}
                   className="px-4 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
@@ -389,7 +390,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
             )}
 
             {/* Live Preview */}
-            {selectedEvent.status === "live" && selectedEvent.mux_playback_id && (
+            {(selectedEvent.status === "live" || selectedEvent.status === "preview") && selectedEvent.mux_playback_id && (
               <div className="bg-gray-900 rounded-xl p-6 space-y-2">
                 <h3 className="text-xl font-semibold">Live Preview</h3>
                 <MuxPlayerEmbed playbackId={selectedEvent.mux_playback_id} />
