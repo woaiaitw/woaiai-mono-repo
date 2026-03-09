@@ -32,7 +32,7 @@ async function seed() {
   for (const user of SEED_USERS) {
     const signUpRes = await fetch(`${AUTH_URL}/api/auth/sign-up/email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Origin": "http://localhost:3000" },
       body: JSON.stringify({
         email: user.email,
         password: PASSWORD,

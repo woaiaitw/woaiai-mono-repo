@@ -6,4 +6,9 @@ export interface Env {
   MUX_WEBHOOK_SECRET: string;
   // CORS
   WEB_URL: string;
+  // Auth worker — service binding (preview) or HTTP URL (production)
+  AUTH_SERVICE?: Fetcher;
+  AUTH_WORKER_URL: string;
+  // D1 database for stream events
+  MUX_DB: D1Database;
 }
