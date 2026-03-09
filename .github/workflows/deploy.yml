@@ -162,6 +162,8 @@ jobs:
             -e "s|^WEB_URL = .*|WEB_URL = \"${{ steps.preview.outputs.WEB_URL }}\"|" \
             -e "s|^AUTH_WORKER_URL = .*|AUTH_WORKER_URL = \"${{ steps.preview.outputs.AUTH_URL }}\"|" \
             wrangler.toml
+          # Service binding for worker-to-worker auth (avoids error 1042 on workers.dev)
+          printf '\n[[services]]\nbinding = "AUTH_SERVICE"\nservice = "%s"\n' "${{ steps.preview.outputs.AUTH_NAME }}" >> wrangler.toml
 
       - name: Deploy mux-worker
         run: |

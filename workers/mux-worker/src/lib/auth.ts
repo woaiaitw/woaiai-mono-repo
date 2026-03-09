@@ -8,7 +8,10 @@ export interface AuthUser {
   role: "owner" | "admin" | "speaker" | "user";
 }
 
-/** Validate session by forwarding cookies and/or Authorization header to auth-worker */
+/** Validate session by forwarding cookies and/or Authorization header to auth-worker.
+ *  Uses Cloudflare Service Binding (AUTH_SERVICE) when available, otherwise falls
+ *  back to HTTP fetch. Service bindings are required on workers.dev because
+ *  subrequests between workers on the same account are blocked (error 1042). */
 async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | null> {
   const cookie = headers.get("cookie");
   const authorization = headers.get("authorization");
@@ -19,9 +22,10 @@ async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | nu
     if (cookie) fwdHeaders.cookie = cookie;
     if (authorization) fwdHeaders.authorization = authorization;
 
-    const res = await fetch(`${env.AUTH_WORKER_URL}/api/auth/get-session`, {
-      headers: fwdHeaders,
-    });
+    const url = `${env.AUTH_WORKER_URL}/api/auth/get-session`;
+    const res = env.AUTH_SERVICE
+      ? await env.AUTH_SERVICE.fetch(url, { headers: fwdHeaders })
+      : await fetch(url, { headers: fwdHeaders });
     if (!res.ok) return null;
 
     const data = (await res.json()) as { user?: AuthUser };
