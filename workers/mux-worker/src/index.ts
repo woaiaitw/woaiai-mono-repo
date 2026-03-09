@@ -26,6 +26,12 @@ type AppEnv = { Bindings: Env; Variables: { user: AuthUser } };
 
 const app = new Hono<AppEnv>();
 
+// Global error handler — ensures uncaught exceptions return JSON with CORS headers
+app.onError((err, c) => {
+  console.error("[MUX-WORKER] Unhandled error:", err);
+  return c.json({ error: err.message || "Internal server error" }, 500);
+});
+
 app.use(
   "/api/mux/*",
   cors({
@@ -46,23 +52,29 @@ app.use(
 
 // Schedule a new stream (host only)
 app.post("/api/mux/events", requireHost(), async (c) => {
-  const user = c.get("user");
-  const body = await c.req.json<{ title: string; description?: string; scheduled_at: string }>();
+  try {
+    const user = c.get("user");
+    const body = await c.req.json<{ title: string; description?: string; scheduled_at: string }>();
 
-  if (!body.title || !body.scheduled_at) {
-    return c.json({ error: "title and scheduled_at are required" }, 400);
+    if (!body.title || !body.scheduled_at) {
+      return c.json({ error: "title and scheduled_at are required" }, 400);
+    }
+
+    const id = crypto.randomUUID();
+    const stream = await createStream(c.env.MUX_DB, {
+      id,
+      title: body.title,
+      description: body.description,
+      scheduled_at: body.scheduled_at,
+      created_by: user.id,
+    });
+
+    return c.json(stream, 201);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[CREATE-EVENT]", message);
+    return c.json({ error: message }, 500);
   }
-
-  const id = crypto.randomUUID();
-  const stream = await createStream(c.env.MUX_DB, {
-    id,
-    title: body.title,
-    description: body.description,
-    scheduled_at: body.scheduled_at,
-    created_by: user.id,
-  });
-
-  return c.json(stream, 201);
 });
 
 // List streams — public (viewers see live/upcoming/past)
