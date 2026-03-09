@@ -46,19 +46,19 @@ function HomePage() {
         <SpeakerInvite />
         <div className="pt-4 border-t border-gray-800">
           <p className="text-sm text-gray-500 mb-3">
-            Or use Mux + OBS streaming (prototype)
+            Mux + OBS Streaming
           </p>
           <div className="flex gap-3 justify-center">
             <Link
               to="/stream"
-              search={{ role: "host", playbackId: "", streamId: "" }}
+              search={{ role: "host", eventId: "", playbackId: "", streamId: "" }}
               className="inline-block px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-colors"
             >
-              Stream with OBS
+              Stream Dashboard
             </Link>
             <Link
               to="/stream"
-              search={{ role: "viewer", playbackId: "", streamId: "" }}
+              search={{ role: "viewer", eventId: "", playbackId: "", streamId: "" }}
               className="inline-block px-6 py-3 border border-gray-600 text-gray-200 font-semibold rounded-xl hover:bg-gray-800 transition-colors"
             >
               Watch Stream
