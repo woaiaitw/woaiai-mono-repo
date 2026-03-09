@@ -8,10 +8,16 @@ export interface AuthUser {
   role: "owner" | "admin" | "speaker" | "user";
 }
 
-/** Validate session by forwarding cookies and/or Authorization header to auth-worker.
+/** Validate session by forwarding cookies or Authorization header to auth-worker.
  *  Uses Cloudflare Service Binding (AUTH_SERVICE) when available, otherwise falls
  *  back to HTTP fetch. Service bindings are required on workers.dev because
- *  subrequests between workers on the same account are blocked (error 1042). */
+ *  subrequests between workers on the same account are blocked (error 1042).
+ *
+ *  NOTE: When both cookie and Authorization header are present, we forward ONLY
+ *  the Authorization header. better-auth returns null when an invalid cookie is
+ *  sent alongside a valid Bearer token (cookie takes precedence internally).
+ *  Cross-origin requests (e.g. web on :3000 → mux-worker on :8790) may include
+ *  stale/unrelated cookies, so the Bearer token is the reliable credential. */
 async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | null> {
   const cookie = headers.get("cookie");
   const authorization = headers.get("authorization");
@@ -19,8 +25,12 @@ async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | nu
 
   try {
     const fwdHeaders: Record<string, string> = {};
-    if (cookie) fwdHeaders.cookie = cookie;
-    if (authorization) fwdHeaders.authorization = authorization;
+    // Prefer Bearer token over cookies to avoid conflicts in cross-origin scenarios
+    if (authorization) {
+      fwdHeaders.authorization = authorization;
+    } else if (cookie) {
+      fwdHeaders.cookie = cookie;
+    }
 
     const url = `${env.AUTH_WORKER_URL}/api/auth/get-session`;
     const res = env.AUTH_SERVICE
@@ -28,8 +38,8 @@ async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | nu
       : await fetch(url, { headers: fwdHeaders });
     if (!res.ok) return null;
 
-    const data = (await res.json()) as { user?: AuthUser };
-    return data.user ?? null;
+    const data = (await res.json()) as { user?: AuthUser } | null;
+    return data?.user ?? null;
   } catch {
     return null;
   }
