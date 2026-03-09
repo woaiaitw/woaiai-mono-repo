@@ -351,4 +351,37 @@ app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
+// Temporary debug endpoint — remove after verifying auth flow
+app.get("/api/mux/debug-auth", async (c) => {
+  const cookie = c.req.raw.headers.get("cookie");
+  const authorization = c.req.raw.headers.get("authorization");
+  const authUrl = c.env.AUTH_WORKER_URL;
+
+  if (!cookie && !authorization) {
+    return c.json({ error: "No auth headers", authUrl });
+  }
+
+  const fwdHeaders: Record<string, string> = {};
+  if (cookie) fwdHeaders.cookie = cookie;
+  if (authorization) fwdHeaders.authorization = authorization;
+
+  try {
+    const res = await fetch(`${authUrl}/api/auth/get-session`, {
+      headers: fwdHeaders,
+    });
+    const body = await res.text();
+    return c.json({
+      authUrl,
+      fetchStatus: res.status,
+      fetchBody: body,
+      sentHeaders: Object.keys(fwdHeaders),
+    });
+  } catch (e) {
+    return c.json({
+      authUrl,
+      error: e instanceof Error ? e.message : String(e),
+    });
+  }
+});
+
 export default app;
