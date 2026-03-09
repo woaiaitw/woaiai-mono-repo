@@ -4,9 +4,25 @@ import type {
   StreamEvent,
   StreamEventHost,
 } from "@web-template/shared";
+import { authClient } from "./auth-client";
 
 const MUX_BASE =
   import.meta.env.VITE_MUX_WORKER_URL ?? "http://localhost:8790";
+
+/** Build headers with auth token for cross-origin worker requests */
+async function authHeaders(
+  extra?: Record<string, string>
+): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { ...extra };
+  try {
+    const session = await authClient.getSession();
+    const token = session.data?.session?.token;
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  } catch {
+    // no session — continue without token
+  }
+  return headers;
+}
 
 // ---------------------------------------------------------------------------
 // Legacy Mux proxy (direct stream creation)
@@ -66,7 +82,7 @@ export async function scheduleEvent(params: {
   const res = await fetch(`${MUX_BASE}/api/mux/events`, {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: await authHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(params),
   });
   if (!res.ok) throw new Error("Failed to schedule stream");
@@ -94,6 +110,7 @@ export async function getEvent(id: string): Promise<StreamEvent> {
 export async function getEventHost(id: string): Promise<StreamEventHost> {
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}/host`, {
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to get host details");
   return res.json();
@@ -103,6 +120,7 @@ export async function provisionEvent(id: string): Promise<StreamEventHost> {
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}/provision`, {
     method: "PUT",
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to provision stream");
   return res.json();
@@ -112,6 +130,7 @@ export async function goLive(id: string): Promise<void> {
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}/go-live`, {
     method: "PUT",
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to go live");
 }
@@ -120,6 +139,7 @@ export async function endEvent(id: string): Promise<void> {
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}/end`, {
     method: "PUT",
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to end stream");
 }
@@ -128,6 +148,7 @@ export async function deleteEvent(id: string): Promise<void> {
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}`, {
     method: "DELETE",
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to delete event");
 }
@@ -138,6 +159,7 @@ export async function resetEventKey(
   const res = await fetch(`${MUX_BASE}/api/mux/events/${id}/reset-key`, {
     method: "POST",
     credentials: "include",
+    headers: await authHeaders(),
   });
   if (!res.ok) throw new Error("Failed to reset stream key");
   return res.json();

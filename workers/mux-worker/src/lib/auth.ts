@@ -8,14 +8,19 @@ export interface AuthUser {
   role: "owner" | "admin" | "speaker" | "user";
 }
 
-/** Validate session by forwarding cookies to auth-worker */
+/** Validate session by forwarding cookies and/or Authorization header to auth-worker */
 async function getSessionUser(env: Env, headers: Headers): Promise<AuthUser | null> {
   const cookie = headers.get("cookie");
-  if (!cookie) return null;
+  const authorization = headers.get("authorization");
+  if (!cookie && !authorization) return null;
 
   try {
+    const fwdHeaders: Record<string, string> = {};
+    if (cookie) fwdHeaders.cookie = cookie;
+    if (authorization) fwdHeaders.authorization = authorization;
+
     const res = await fetch(`${env.AUTH_WORKER_URL}/api/auth/get-session`, {
-      headers: { cookie },
+      headers: fwdHeaders,
     });
     if (!res.ok) return null;
 
