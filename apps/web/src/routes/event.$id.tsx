@@ -5,6 +5,7 @@ import { StatusBadge } from "~/components/StatusBadge";
 import { CountdownTimer } from "~/components/CountdownTimer";
 import { StreamPlayer } from "~/components/StreamPlayer";
 import { HostStreamControls } from "~/components/HostStreamControls";
+import { EventBanner } from "~/components/EventBanner";
 
 export const Route = createFileRoute("/event/$id")({
   component: EventPage,
@@ -67,10 +68,10 @@ function EventPage() {
 
       {/* Status-based content */}
       {event.status === "scheduled" && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center space-y-4">
-          <p className="text-gray-400">Event starts in</p>
-          <CountdownTimer targetDate={event.scheduled_at} />
-        </div>
+        <EventBanner
+          targetDate={event.scheduled_at}
+          className="aspect-video"
+        />
       )}
 
       {event.status === "preview" && (
