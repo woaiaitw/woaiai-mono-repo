@@ -13,7 +13,8 @@
       "name": "web-production",
       "vars": {
         "AUTH_WORKER_URL": "https://auth.woaiai.tw",
-        "RTC_WORKER_URL": "https://rtc.woaiai.tw"
+        "RTC_WORKER_URL": "https://rtc.woaiai.tw",
+        "MUX_WORKER_URL": "https://mux.woaiai.tw"
       },
       "routes": [
         {
