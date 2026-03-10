@@ -12,6 +12,7 @@ import {
 } from "../lib/mux-client";
 import { authClient } from "../lib/auth-client";
 import type { StreamEvent, StreamEventHost } from "@web-template/shared";
+import { EventBanner } from "../components/EventBanner";
 
 export const Route = createFileRoute("/stream")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -484,12 +485,12 @@ function ViewerPanel({
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4">
-        {status === "scheduled" ? (
-          <div className="text-center space-y-3">
-            <p className="text-gray-400 text-lg">Stream starts at</p>
-            <p className="text-2xl font-bold">
-              {event ? new Date(event.scheduled_at).toLocaleString() : "..."}
-            </p>
+        {status === "scheduled" && event ? (
+          <div className="w-full max-w-5xl">
+            <EventBanner
+              targetDate={event.scheduled_at}
+              className="aspect-video"
+            />
           </div>
         ) : status === "preview" ? (
           <div className="text-center space-y-2">
