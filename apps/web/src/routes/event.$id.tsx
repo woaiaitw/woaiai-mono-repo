@@ -23,9 +23,9 @@ function EventPage() {
     return (
       <main className="mx-auto max-w-3xl px-4 py-12">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-gray-800 rounded" />
-          <div className="h-4 w-96 bg-gray-800 rounded" />
-          <div className="h-64 bg-gray-800 rounded-xl" />
+          <div className="h-8 w-64 bg-skeleton rounded" />
+          <div className="h-4 w-96 bg-skeleton rounded" />
+          <div className="h-64 bg-skeleton rounded-xl" />
         </div>
       </main>
     );
@@ -34,10 +34,10 @@ function EventPage() {
   if (error || !event) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-12 text-center">
-        <p className="text-red-400 text-lg">{error ?? "Event not found"}</p>
+        <p className="text-red-600 text-lg">{error ?? "Event not found"}</p>
         <Link
           to="/"
-          className="mt-4 inline-block text-sm text-gray-400 hover:text-white transition-colors"
+          className="mt-4 inline-block text-sm text-subtle hover:text-heading transition-colors"
         >
           &larr; Back to events
         </Link>
@@ -50,7 +50,7 @@ function EventPage() {
       {/* Back link */}
       <Link
         to="/"
-        className="text-sm text-gray-400 hover:text-white transition-colors"
+        className="text-sm text-subtle hover:text-heading transition-colors"
       >
         &larr; Back to events
       </Link>
@@ -58,11 +58,11 @@ function EventPage() {
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-white">{event.title}</h1>
+          <h1 className="text-2xl font-bold text-heading">{event.title}</h1>
           <StatusBadge status={event.status} />
         </div>
         {event.description && (
-          <p className="text-gray-400">{event.description}</p>
+          <p className="text-subtle">{event.description}</p>
         )}
       </div>
 
@@ -75,11 +75,11 @@ function EventPage() {
       )}
 
       {event.status === "preview" && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center space-y-4">
+        <div className="bg-card border border-edge rounded-xl p-8 text-center space-y-4">
           <div className="flex justify-center">
             <div className="h-8 w-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-gray-300">The stream is almost ready...</p>
+          <p className="text-body">The stream is almost ready...</p>
         </div>
       )}
 
@@ -88,8 +88,8 @@ function EventPage() {
       )}
 
       {event.status === "ended" && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-          <p className="text-gray-400">This event has ended</p>
+        <div className="bg-card border border-edge rounded-xl p-8 text-center">
+          <p className="text-subtle">This event has ended</p>
         </div>
       )}
 

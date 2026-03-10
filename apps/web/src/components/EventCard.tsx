@@ -17,22 +17,22 @@ export function EventCard({ event }: { event: StreamEvent }) {
     <Link
       to="/event/$id"
       params={{ id: event.id }}
-      className="block bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-gray-700 transition-colors"
+      className="block bg-card border border-edge rounded-xl overflow-hidden hover:border-edge-hover transition-colors"
     >
       <EventBannerCompact />
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-white truncate">
+          <h3 className="text-lg font-semibold text-heading truncate">
             {event.title}
           </h3>
           <StatusBadge status={event.status} />
         </div>
         {event.description && (
-          <p className="mt-2 text-sm text-gray-400 line-clamp-2">
+          <p className="mt-2 text-sm text-subtle line-clamp-2">
             {event.description}
           </p>
         )}
-        <p className="mt-3 text-xs text-gray-500">
+        <p className="mt-3 text-xs text-faint">
           {formatDate(event.scheduled_at)}
         </p>
       </div>

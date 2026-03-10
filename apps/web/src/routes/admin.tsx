@@ -89,17 +89,17 @@ function AdminPage() {
 
   if (sessionPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-page">
+        <p className="text-subtle">Loading...</p>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center space-y-4">
-          <p className="text-gray-600">
+          <p className="text-body">
             You need to sign in to view this page.
           </p>
           <Link
@@ -115,9 +115,9 @@ function AdminPage() {
 
   if (session.user.role !== "owner" && session.user.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center space-y-4">
-          <p className="text-gray-600">
+          <p className="text-body">
             You do not have permission to access this page.
           </p>
           <Link
@@ -134,15 +134,15 @@ function AdminPage() {
   const currentUserRole = session.user.role as Role;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-page p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-heading">
             User Management
           </h1>
           <Link
             to="/"
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            className="px-4 py-2 text-sm text-body border border-edge-hover rounded-lg hover:bg-card-hover transition-colors"
           >
             Back to Dashboard
           </Link>
@@ -154,25 +154,25 @@ function AdminPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-card rounded-xl shadow-sm overflow-hidden">
           {loading ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-subtle">
               Loading users...
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <tr className="border-b border-edge bg-page">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-subtle uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-subtle uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-subtle uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-subtle uppercase tracking-wider">
                     Created
                   </th>
                 </tr>
@@ -191,11 +191,11 @@ function AdminPage() {
                       : VALID_ROLES.filter((r) => r !== "owner");
 
                   return (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                    <tr key={user.id} className="hover:bg-card-hover">
+                      <td className="px-6 py-4 text-sm text-heading">
                         {user.name}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-subtle">
                         {user.email}
                       </td>
                       <td className="px-6 py-4">
@@ -209,7 +209,7 @@ function AdminPage() {
                                 e.target.value as Role
                               )
                             }
-                            className="text-sm border border-gray-300 rounded-md px-2 py-1 bg-white disabled:opacity-50"
+                            className="text-sm border border-edge-hover rounded-md px-2 py-1 bg-card disabled:opacity-50"
                           >
                             {availableRoles.map((role) => (
                               <option key={role} value={role}>
@@ -218,17 +218,17 @@ function AdminPage() {
                             ))}
                           </select>
                         ) : (
-                          <span className="text-sm text-gray-700 inline-flex items-center gap-1">
+                          <span className="text-sm text-body inline-flex items-center gap-1">
                             {user.role}
                             {isSelf && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-faint">
                                 (you)
                               </span>
                             )}
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-subtle">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                     </tr>

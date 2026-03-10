@@ -6,19 +6,19 @@ const STATUS_CONFIG: Record<
 > = {
   scheduled: {
     label: "Scheduled",
-    classes: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    classes: "bg-blue-50 text-blue-700 border-blue-200",
   },
   preview: {
     label: "Starting",
-    classes: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+    classes: "bg-yellow-50 text-yellow-700 border-yellow-200",
   },
   live: {
     label: "Live",
-    classes: "bg-green-500/15 text-green-400 border-green-500/30",
+    classes: "bg-green-50 text-green-700 border-green-200",
   },
   ended: {
     label: "Ended",
-    classes: "bg-gray-500/15 text-gray-400 border-gray-500/30",
+    classes: "bg-gray-100 text-gray-600 border-gray-200",
   },
 };
 
@@ -30,8 +30,8 @@ export function StatusBadge({ status }: { status: StreamEventStatus }) {
     >
       {status === "live" && (
         <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
         </span>
       )}
       {config.label}

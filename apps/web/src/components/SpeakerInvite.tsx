@@ -75,11 +75,11 @@ export function SpeakerInvite() {
   };
 
   return (
-    <div className="w-full max-w-md bg-gray-900 border border-gray-700 rounded-xl p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-white">
+    <div className="w-full max-w-md bg-card border border-edge rounded-xl p-6 space-y-4">
+      <h2 className="text-lg font-semibold text-heading">
         Invite Speaker
       </h2>
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-subtle">
         Generate a magic link that will log someone in with the speaker role.
       </p>
 
@@ -95,7 +95,7 @@ export function SpeakerInvite() {
               }}
               placeholder="speaker@example.com"
               disabled={loading}
-              className="flex-1 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg border border-gray-600 placeholder-gray-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              className="flex-1 px-3 py-2 bg-input text-heading text-sm rounded-lg border border-edge placeholder-faint focus:outline-none focus:border-blue-500 disabled:opacity-50"
             />
             <button
               type="button"
@@ -107,26 +107,26 @@ export function SpeakerInvite() {
             </button>
           </div>
           {error && (
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-sm text-red-600">{error}</p>
           )}
         </>
       ) : (
         <div className="space-y-3">
-          <label className="block text-sm text-gray-400">
+          <label className="block text-sm text-subtle">
             Magic link for{" "}
-            <span className="text-white font-medium">{email}</span>
+            <span className="text-heading font-medium">{email}</span>
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               readOnly
               value={generatedUrl}
-              className="flex-1 px-3 py-2 bg-gray-800 text-gray-300 text-xs font-mono rounded-lg border border-gray-600 focus:outline-none"
+              className="flex-1 px-3 py-2 bg-input text-body text-xs font-mono rounded-lg border border-edge focus:outline-none"
             />
             <button
               type="button"
               onClick={handleCopy}
-              className="px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-600 transition-colors whitespace-nowrap"
+              className="px-4 py-2 bg-input text-heading text-sm font-medium rounded-lg hover:bg-card-hover transition-colors whitespace-nowrap"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -134,7 +134,7 @@ export function SpeakerInvite() {
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="text-sm text-subtle hover:text-heading transition-colors"
           >
             Generate another link
           </button>

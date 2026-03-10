@@ -43,17 +43,17 @@ function SpeakerInvitePage() {
 
   if (isPending || activating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Setting up your speaker access...</p>
+      <div className="min-h-screen flex items-center justify-center bg-page">
+        <p className="text-subtle">Setting up your speaker access...</p>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center space-y-4">
-          <p className="text-gray-600">Verifying your invite...</p>
+          <p className="text-body">Verifying your invite...</p>
         </div>
       </div>
     );
@@ -61,12 +61,12 @@ function SpeakerInvitePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-red-600">
             Invite Error
           </h1>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-body">{error}</p>
           <Link
             to="/"
             className="inline-block px-6 py-3 text-sm text-blue-600 hover:text-blue-700"
@@ -79,16 +79,16 @@ function SpeakerInvitePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-page">
       <div className="text-center space-y-4">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-heading">
           Welcome, Speaker!
         </h1>
-        <p className="text-gray-600">
+        <p className="text-body">
           You have been granted speaker access.
         </p>
-        <div className="bg-white rounded-xl shadow-sm p-4 inline-block">
-          <span className="text-sm text-gray-500">Role: </span>
+        <div className="bg-card rounded-xl shadow-sm p-4 inline-block">
+          <span className="text-sm text-subtle">Role: </span>
           <span className="text-sm font-semibold text-blue-600 capitalize">
             speaker
           </span>

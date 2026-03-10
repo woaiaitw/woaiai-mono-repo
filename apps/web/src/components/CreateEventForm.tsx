@@ -34,21 +34,21 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5"
+        className="w-full max-w-md bg-card border border-edge rounded-xl p-6 space-y-5 shadow-lg"
       >
-        <h2 className="text-xl font-bold text-white">Create Event</h2>
+        <h2 className="text-xl font-bold text-heading">Create Event</h2>
 
         {error && (
-          <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
 
         <div className="space-y-1.5">
-          <label htmlFor="title" className="text-sm font-medium text-gray-300">
+          <label htmlFor="title" className="text-sm font-medium text-body">
             Title
           </label>
           <input
@@ -57,7 +57,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-input border border-edge rounded-lg text-heading placeholder:text-faint focus:outline-none focus:border-blue-500"
             placeholder="Event title"
           />
         </div>
@@ -65,7 +65,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
         <div className="space-y-1.5">
           <label
             htmlFor="description"
-            className="text-sm font-medium text-gray-300"
+            className="text-sm font-medium text-body"
           >
             Description
           </label>
@@ -74,7 +74,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+            className="w-full px-3 py-2 bg-input border border-edge rounded-lg text-heading placeholder:text-faint focus:outline-none focus:border-blue-500 resize-none"
             placeholder="What's this event about?"
           />
         </div>
@@ -82,7 +82,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
         <div className="space-y-1.5">
           <label
             htmlFor="scheduled_at"
-            className="text-sm font-medium text-gray-300"
+            className="text-sm font-medium text-body"
           >
             Scheduled time
           </label>
@@ -92,7 +92,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
             required
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-input border border-edge rounded-lg text-heading focus:outline-none focus:border-blue-500"
           />
         </div>
 
@@ -100,7 +100,7 @@ export function CreateEventForm({ onCreated, onCancel }: CreateEventFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            className="px-4 py-2 text-sm font-medium text-subtle hover:text-heading transition-colors"
           >
             Cancel
           </button>

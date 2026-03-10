@@ -33,12 +33,12 @@ export function CountdownTimer({ targetDate }: { targetDate: string }) {
       {segments.map((seg) => (
         <div
           key={seg.label}
-          className="flex flex-col items-center bg-gray-800 rounded-lg px-4 py-3 min-w-[4rem]"
+          className="flex flex-col items-center bg-card border border-edge rounded-lg px-4 py-3 min-w-[4rem]"
         >
-          <span className="text-2xl font-bold text-white tabular-nums">
+          <span className="text-2xl font-bold text-heading tabular-nums">
             {String(seg.value).padStart(2, "0")}
           </span>
-          <span className="text-xs text-gray-400 mt-1">{seg.label}</span>
+          <span className="text-xs text-subtle mt-1">{seg.label}</span>
         </div>
       ))}
     </div>

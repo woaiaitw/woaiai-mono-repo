@@ -26,7 +26,7 @@ function NavBar() {
   const user = session?.user;
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-gray-800 bg-gray-950/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-40 border-b border-edge bg-card/80 backdrop-blur-md">
       <div className="mx-auto max-w-5xl flex items-center justify-between h-14 px-4">
         <Link to="/" className="block">
           <img src="/logo.svg" alt="WOAI AI" className="h-6" />
@@ -34,16 +34,16 @@ function NavBar() {
 
         <div className="flex items-center gap-4">
           {isPending ? (
-            <div className="h-8 w-20 bg-gray-800 rounded-lg animate-pulse" />
+            <div className="h-8 w-20 bg-skeleton rounded-lg animate-pulse" />
           ) : user ? (
             <>
-              <span className="text-sm text-gray-400 hidden sm:inline">
+              <span className="text-sm text-subtle hidden sm:inline">
                 {user.name || user.email}
               </span>
               <button
                 type="button"
                 onClick={() => authClient.signOut()}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-subtle hover:text-heading transition-colors"
               >
                 Sign Out
               </button>
@@ -51,7 +51,7 @@ function NavBar() {
           ) : (
             <Link
               to="/login"
-              className="text-sm font-medium text-gray-300 hover:text-white transition-colors"
+              className="text-sm font-medium text-body hover:text-heading transition-colors"
             >
               Sign In
             </Link>
@@ -77,7 +77,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-gray-950 text-white antialiased">
+      <body className="bg-page text-heading antialiased">
         {children}
         <Scripts />
       </body>

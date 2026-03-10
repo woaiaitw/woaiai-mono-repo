@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@theme {
+  /* Page & surfaces */
+  --color-page: #f8fafc;
+  --color-card: #ffffff;
+  --color-card-hover: #f1f5f9;
+  --color-input: #f1f5f9;
+  --color-skeleton: #e2e8f0;
+
+  /* Text */
+  --color-heading: #0f172a;
+  --color-body: #475569;
+  --color-subtle: #64748b;
+  --color-faint: #94a3b8;
+
+  /* Borders */
+  --color-edge: #e2e8f0;
+  --color-edge-hover: #cbd5e1;
+}
