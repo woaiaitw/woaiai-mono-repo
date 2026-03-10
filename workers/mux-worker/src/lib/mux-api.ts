@@ -36,7 +36,7 @@ export async function createLiveStream(env: Env): Promise<MuxLiveStream> {
       new_asset_settings: { playback_policies: ["public"] },
       generated_subtitles: [{ language_code: "en", name: "English CC" }],
       reduced_latency: true,
-      test: true, // TODO: remove for production
+      ...(env.ENVIRONMENT === "development" && { test: true }),
     }),
   });
   if (!res.ok) {

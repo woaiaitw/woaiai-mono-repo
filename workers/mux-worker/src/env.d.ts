@@ -1,4 +1,6 @@
 export interface Env {
+  // "development" (local), "preview", or "production"
+  ENVIRONMENT: string;
   // Mux API credentials (HTTP Basic Auth)
   MUX_TOKEN_ID: string;
   MUX_TOKEN_SECRET: string;
