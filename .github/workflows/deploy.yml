@@ -57,21 +57,31 @@ jobs:
           echo "WEB_NAME=web-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "AUTH_NAME=auth-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "RTC_NAME=rtc-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "MUX_NAME=mux-worker-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "DB_NAME=auth-db-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "MUX_DB_NAME=mux-db-pr-$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "WEB_URL=https://web-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
           echo "AUTH_URL=https://auth-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
           echo "RTC_URL=https://rtc-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
+          echo "MUX_URL=https://mux-worker-pr-$PR_NUMBER.woaiaitw.workers.dev" >> "$GITHUB_OUTPUT"
 
-      - name: Create D1 database if needed
+      - name: Create D1 databases if needed
         run: |
+          # Auth DB
           DB_NAME="${{ steps.preview.outputs.DB_NAME }}"
-          # Check if database already exists
           if ! npx wrangler d1 list --json | jq -e ".[] | select(.name == \"$DB_NAME\")" > /dev/null 2>&1; then
             npx wrangler d1 create "$DB_NAME"
           fi
-          # Get database ID
           DB_ID=$(npx wrangler d1 list --json | jq -r ".[] | select(.name == \"$DB_NAME\") | .uuid")
           echo "DB_ID=$DB_ID" >> "$GITHUB_ENV"
+
+          # Mux DB
+          MUX_DB_NAME="${{ steps.preview.outputs.MUX_DB_NAME }}"
+          if ! npx wrangler d1 list --json | jq -e ".[] | select(.name == \"$MUX_DB_NAME\")" > /dev/null 2>&1; then
+            npx wrangler d1 create "$MUX_DB_NAME"
+          fi
+          MUX_DB_ID=$(npx wrangler d1 list --json | jq -r ".[] | select(.name == \"$MUX_DB_NAME\") | .uuid")
+          echo "MUX_DB_ID=$MUX_DB_ID" >> "$GITHUB_ENV"
 
       - name: Modify auth-worker config for preview
         run: |
@@ -99,6 +109,36 @@ jobs:
           echo "${{ secrets.GOOGLE_CLIENT_ID_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_ID --name ${{ steps.preview.outputs.AUTH_NAME }}
           echo "${{ secrets.GOOGLE_CLIENT_SECRET_PREVIEW }}" | npx wrangler secret put GOOGLE_CLIENT_SECRET --name ${{ steps.preview.outputs.AUTH_NAME }}
 
+      - name: Seed preview database
+        run: |
+          AUTH_URL="${{ steps.preview.outputs.AUTH_URL }}"
+          WEB_URL="${{ steps.preview.outputs.WEB_URL }}"
+          # Wait for auth worker to be reachable after secrets are set
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -sf "$AUTH_URL/health" > /dev/null 2>&1; then break; fi
+            echo "Waiting for auth worker..."
+            sleep 5
+          done
+          # Sign up seed users (Origin header required for CSRF validation)
+          for role in owner admin speaker user; do
+            NAME="$(echo "${role}" | sed 's/./\U&/')"
+            echo "Signing up ${role}@example.com..."
+            HTTP_CODE=$(curl -s -o /tmp/signup-${role}.json -w "%{http_code}" \
+              -X POST "$AUTH_URL/api/auth/sign-up/email" \
+              -H "Content-Type: application/json" \
+              -H "Origin: $WEB_URL" \
+              -d "{\"email\":\"${role}@example.com\",\"password\":\"password\",\"name\":\"${NAME}\"}")
+            echo "  -> HTTP $HTTP_CODE: $(cat /tmp/signup-${role}.json 2>/dev/null | head -c 200)"
+          done
+          # Update roles via D1
+          cd workers/auth-worker
+          for role in owner admin speaker; do
+            echo "Setting role ${role} for ${role}@example.com..."
+            npx wrangler d1 execute AUTH_DB --remote \
+              --command="UPDATE user SET role = '${role}' WHERE email = '${role}@example.com';" \
+              || true
+          done
+
       - name: Deploy rtc-worker
         run: |
           cd workers/rtc-worker
@@ -111,11 +151,41 @@ jobs:
           echo "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" | npx wrangler secret put CF_ACCOUNT_ID --name ${{ steps.preview.outputs.RTC_NAME }}
           echo "${{ secrets.CLOUDFLARE_API_TOKEN }}" | npx wrangler secret put CF_API_TOKEN --name ${{ steps.preview.outputs.RTC_NAME }}
           echo "${{ secrets.REALTIME_APP_ID }}" | npx wrangler secret put REALTIME_APP_ID --name ${{ steps.preview.outputs.RTC_NAME }}
+          echo "${{ secrets.DEEPGRAM_API_KEY }}" | npx wrangler secret put DEEPGRAM_API_KEY --name ${{ steps.preview.outputs.RTC_NAME }}
+
+      - name: Modify mux-worker config for preview
+        run: |
+          cd workers/mux-worker
+          sed -i \
+            -e "s/^name = .*/name = \"${{ steps.preview.outputs.MUX_NAME }}\"/" \
+            -e "s/^database_id = .*/database_id = \"$MUX_DB_ID\"/" \
+            -e "s|^WEB_URL = .*|WEB_URL = \"${{ steps.preview.outputs.WEB_URL }}\"|" \
+            -e "s|^AUTH_WORKER_URL = .*|AUTH_WORKER_URL = \"${{ steps.preview.outputs.AUTH_URL }}\"|" \
+            wrangler.toml
+          # Service binding for worker-to-worker auth (avoids error 1042 on workers.dev)
+          printf '\n[[services]]\nbinding = "AUTH_SERVICE"\nservice = "%s"\n' "${{ steps.preview.outputs.AUTH_NAME }}" >> wrangler.toml
+
+      - name: Deploy mux-worker
+        run: |
+          cd workers/mux-worker
+          npx wrangler deploy
+
+      - name: Apply mux-worker D1 migrations
+        run: |
+          cd workers/mux-worker
+          npx wrangler d1 migrations apply MUX_DB --remote
+
+      - name: Set mux-worker secrets
+        run: |
+          echo "${{ secrets.MUX_TOKEN_ID }}" | npx wrangler secret put MUX_TOKEN_ID --name ${{ steps.preview.outputs.MUX_NAME }}
+          echo "${{ secrets.MUX_TOKEN_SECRET }}" | npx wrangler secret put MUX_TOKEN_SECRET --name ${{ steps.preview.outputs.MUX_NAME }}
+          echo "${{ secrets.MUX_WEBHOOK_SECRET }}" | npx wrangler secret put MUX_WEBHOOK_SECRET --name ${{ steps.preview.outputs.MUX_NAME }}
 
       - name: Build and deploy web
         env:
           VITE_AUTH_WORKER_URL: ${{ steps.preview.outputs.AUTH_URL }}
           VITE_RTC_WORKER_URL: ${{ steps.preview.outputs.RTC_URL }}
+          VITE_MUX_WORKER_URL: ${{ steps.preview.outputs.MUX_URL }}
         run: |
           cd apps/web
           npm run build
@@ -136,6 +206,7 @@ jobs:
               '| Web | ${{ steps.preview.outputs.WEB_URL }} |',
               '| Auth | ${{ steps.preview.outputs.AUTH_URL }} |',
               '| RTC | ${{ steps.preview.outputs.RTC_URL }} |',
+              '| Mux | ${{ steps.preview.outputs.MUX_URL }} |',
               '',
               '_Deployed from commit ${{ github.sha }}_',
             ].join('\n');
@@ -194,10 +265,21 @@ jobs:
           cd workers/rtc-worker
           npx wrangler deploy --env production
 
+      - name: Deploy mux-worker
+        run: |
+          cd workers/mux-worker
+          npx wrangler deploy --env production
+
+      - name: Apply mux-worker production D1 migrations
+        run: |
+          cd workers/mux-worker
+          npx wrangler d1 migrations apply MUX_DB --env production --remote
+
       - name: Build and deploy web
         env:
           VITE_AUTH_WORKER_URL: https://auth.woaiai.tw
           VITE_RTC_WORKER_URL: https://rtc.woaiai.tw
+          VITE_MUX_WORKER_URL: https://mux.woaiai.tw
         run: |
           cd apps/web
           npm run build
@@ -219,10 +301,12 @@ jobs:
           npx wrangler delete --name web-pr-$PR_NUMBER --force || true
           npx wrangler delete --name auth-worker-pr-$PR_NUMBER --force || true
           npx wrangler delete --name rtc-worker-pr-$PR_NUMBER --force || true
+          npx wrangler delete --name mux-worker-pr-$PR_NUMBER --force || true
 
-      - name: Delete preview D1 database
+      - name: Delete preview D1 databases
         run: |
-          DB_NAME="auth-db-pr-$PR_NUMBER"
-          if npx wrangler d1 list --json | jq -e ".[] | select(.name == \"$DB_NAME\")" > /dev/null 2>&1; then
-            npx wrangler d1 delete "$DB_NAME" -y || true
-          fi
+          for DB_NAME in "auth-db-pr-$PR_NUMBER" "mux-db-pr-$PR_NUMBER"; do
+            if npx wrangler d1 list --json | jq -e ".[] | select(.name == \"$DB_NAME\")" > /dev/null 2>&1; then
+              npx wrangler d1 delete "$DB_NAME" -y || true
+            fi
+          done
