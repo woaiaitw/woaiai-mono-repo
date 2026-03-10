@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import {
   getEvent,
   getEventHost,
@@ -89,12 +89,13 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
     }
   }, [initialEventId, isHost, loadEvent]);
 
-  // Poll selected event every 5s
+  // Poll selected event every 5s (depend on ID only to avoid re-render cascades)
+  const selectedEventId = selectedEvent?.id;
   useEffect(() => {
-    if (!selectedEvent) return;
-    const interval = setInterval(() => loadEvent(selectedEvent.id), 5000);
+    if (!selectedEventId) return;
+    const interval = setInterval(() => loadEvent(selectedEventId), 5000);
     return () => clearInterval(interval);
-  }, [selectedEvent, loadEvent]);
+  }, [selectedEventId, loadEvent]);
 
   if (!isHost) {
     return (
@@ -444,7 +445,12 @@ function ViewerPanel({
       try {
         const ev = await getEvent(eventId);
         if (cancelled) return;
-        setEvent(ev);
+        // Only update event state when display fields change to avoid re-render cascades
+        setEvent((prev) =>
+          prev && prev.title === ev.title && prev.status === ev.status && prev.scheduled_at === ev.scheduled_at
+            ? prev
+            : ev
+        );
         setStatus(ev.status);
         if (ev.mux_playback_id) setPlaybackId(ev.mux_playback_id);
       } catch {
@@ -550,7 +556,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function MuxPlayerEmbed({ playbackId }: { playbackId: string }) {
+const MuxPlayerEmbed = memo(function MuxPlayerEmbed({ playbackId }: { playbackId: string }) {
   return (
     <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
       <iframe
@@ -561,4 +567,4 @@ function MuxPlayerEmbed({ playbackId }: { playbackId: string }) {
       />
     </div>
   );
-}
+});
