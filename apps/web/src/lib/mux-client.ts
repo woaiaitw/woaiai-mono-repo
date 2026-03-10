@@ -1,9 +1,4 @@
-import type {
-  MuxStreamInfo,
-  MuxStreamListItem,
-  StreamEvent,
-  StreamEventHost,
-} from "@web-template/shared";
+import type { StreamEvent, StreamEventHost } from "@web-template/shared";
 import { authClient } from "./auth-client";
 
 const MUX_BASE =
@@ -22,52 +17,6 @@ async function authHeaders(
     // no session — continue without token
   }
   return headers;
-}
-
-// ---------------------------------------------------------------------------
-// Legacy Mux proxy (direct stream creation)
-// ---------------------------------------------------------------------------
-
-export async function createStream(): Promise<MuxStreamInfo> {
-  const res = await fetch(`${MUX_BASE}/api/mux/streams`, {
-    method: "POST",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to create stream");
-  return res.json();
-}
-
-export async function getStream(streamId: string): Promise<MuxStreamInfo> {
-  const res = await fetch(`${MUX_BASE}/api/mux/streams/${streamId}`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to get stream");
-  return res.json();
-}
-
-export async function listStreams(): Promise<MuxStreamListItem[]> {
-  const res = await fetch(`${MUX_BASE}/api/mux/streams`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to list streams");
-  const data = await res.json();
-  return data.streams;
-}
-
-export async function completeStream(streamId: string): Promise<void> {
-  const res = await fetch(`${MUX_BASE}/api/mux/streams/${streamId}/complete`, {
-    method: "PUT",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to end stream");
-}
-
-export async function deleteStream(streamId: string): Promise<void> {
-  const res = await fetch(`${MUX_BASE}/api/mux/streams/${streamId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error("Failed to delete stream");
 }
 
 // ---------------------------------------------------------------------------

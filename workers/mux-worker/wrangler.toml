@@ -8,6 +8,7 @@ port = 8790
 inspector_port = 9242
 
 [vars]
+ENVIRONMENT = "development"
 WEB_URL = "http://localhost:3000"
 AUTH_WORKER_URL = "http://localhost:8788"
 
@@ -21,6 +22,7 @@ migrations_dir = "migrations"
 name = "mux-worker-production"
 
 [env.production.vars]
+ENVIRONMENT = "production"
 WEB_URL = "https://woaiai.tw"
 AUTH_WORKER_URL = "https://auth.woaiai.tw"
 

@@ -121,7 +121,7 @@ function AdminPage() {
             You do not have permission to access this page.
           </p>
           <Link
-            to="/dashboard"
+            to="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Dashboard
@@ -141,7 +141,7 @@ function AdminPage() {
             User Management
           </h1>
           <Link
-            to="/dashboard"
+            to="/"
             className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
           >
             Back to Dashboard

@@ -159,6 +159,7 @@ jobs:
           sed -i \
             -e "s/^name = .*/name = \"${{ steps.preview.outputs.MUX_NAME }}\"/" \
             -e "s/^database_id = .*/database_id = \"$MUX_DB_ID\"/" \
+            -e "s|^ENVIRONMENT = .*|ENVIRONMENT = \"preview\"|" \
             -e "s|^WEB_URL = .*|WEB_URL = \"${{ steps.preview.outputs.WEB_URL }}\"|" \
             -e "s|^AUTH_WORKER_URL = .*|AUTH_WORKER_URL = \"${{ steps.preview.outputs.AUTH_URL }}\"|" \
             wrangler.toml
