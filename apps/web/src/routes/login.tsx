@@ -32,7 +32,7 @@ function LoginPage() {
       if (result.error) {
         setError(result.error.message ?? "Sign in failed");
       } else {
-        navigate({ to: "/dashboard" });
+        navigate({ to: "/" });
       }
     } catch {
       setError("An unexpected error occurred");
