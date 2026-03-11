@@ -266,19 +266,9 @@ jobs:
           cd workers/rtc-worker
           npx wrangler deploy --env production
 
-      - name: Ensure mux-db production D1 database exists
-        run: |
-          MUX_DB_NAME="mux-db"
-          if ! npx wrangler d1 list --json | jq -e ".[] | select(.name == \"$MUX_DB_NAME\")" > /dev/null 2>&1; then
-            npx wrangler d1 create "$MUX_DB_NAME"
-          fi
-          MUX_DB_ID=$(npx wrangler d1 list --json | jq -r ".[] | select(.name == \"$MUX_DB_NAME\") | .uuid")
-          echo "MUX_DB_ID=$MUX_DB_ID" >> "$GITHUB_ENV"
-
       - name: Deploy mux-worker
         run: |
           cd workers/mux-worker
-          sed -i "s/database_id = \"DATABASE_ID_HERE\"/database_id = \"$MUX_DB_ID\"/g" wrangler.toml
           npx wrangler deploy --env production
 
       - name: Apply mux-worker production D1 migrations
