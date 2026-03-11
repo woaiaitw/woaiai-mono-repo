@@ -592,7 +592,7 @@ const MuxPlayerEmbed = memo(function MuxPlayerEmbed({ playbackId }: { playbackId
   return (
     <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
       <iframe
-        src={`https://player.mux.com/${playbackId}`}
+        src={`https://player.mux.com/${playbackId}?default-show-captions=false`}
         className="w-full h-full border-0"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
