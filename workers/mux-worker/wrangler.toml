@@ -29,7 +29,7 @@ AUTH_WORKER_URL = "https://auth.woaiai.tw"
 [[env.production.d1_databases]]
 binding = "MUX_DB"
 database_name = "mux-db"
-database_id = "DATABASE_ID_HERE"
+database_id = "d8ccb11f-bb59-47e9-97a0-612aaf9609d5"
 migrations_dir = "migrations"
 
 [[env.production.routes]]
