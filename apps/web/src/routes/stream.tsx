@@ -317,16 +317,15 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               <StatusBadge status={selectedEvent.status} />
             </div>
 
-            {selectedEvent.status === "scheduled" ? (
-              <>
-                {/* Guided Setup Checklist */}
-                <StreamSetupChecklist
-                  event={selectedEvent}
-                  onProvision={handleProvision}
-                  error={error}
-                />
-
-                {/* Delete button */}
+            {selectedEvent.status === "scheduled" && !selectedEvent.mux_stream_key ? (
+              /* Not yet provisioned — show provision + delete buttons */
+              <div className="flex gap-3">
+                <button
+                  onClick={handleProvision}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm"
+                >
+                  Provision Stream
+                </button>
                 <button
                   onClick={() => {
                     if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
@@ -337,21 +336,17 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                 >
                   Delete Event
                 </button>
-
-                {/* Viewer Link (shown once provisioned) */}
-                {selectedEvent.mux_playback_id && (
-                  <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
-                    <h3 className="text-xl font-semibold">Viewer Link</h3>
-                    <p className="text-sm text-subtle">Share this with your audience:</p>
-                    <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
-                      {window.location.origin}/stream?eventId={selectedEvent.id}
-                    </code>
-                  </div>
-                )}
-              </>
-            ) : (
+              </div>
+            ) : (selectedEvent.status === "scheduled" || selectedEvent.status === "preview") && selectedEvent.mux_stream_key ? (
+              /* Provisioned & still setting up — guided checklist */
               <>
-                {/* Action Buttons for preview/live/ended */}
+                <StreamSetupChecklist
+                  event={selectedEvent}
+                  onProvision={handleProvision}
+                  error={error}
+                />
+
+                {/* Action buttons */}
                 <div className="flex gap-3">
                   {selectedEvent.status === "preview" && (
                     <button
@@ -361,7 +356,49 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                       Go Live
                     </button>
                   )}
-                  {(selectedEvent.status === "live" || selectedEvent.status === "preview") && (
+                  {selectedEvent.status === "preview" && (
+                    <button
+                      onClick={handleEnd}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
+                    >
+                      End Stream
+                    </button>
+                  )}
+                  {selectedEvent.status === "scheduled" && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+                          handleDelete(selectedEvent.id);
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-900/50 border border-red-500/30 text-red-400 rounded-lg font-semibold hover:bg-red-900 hover:text-red-300 transition-colors text-sm"
+                    >
+                      Delete Event
+                    </button>
+                  )}
+                </div>
+
+                {/* Viewer Link */}
+                {selectedEvent.mux_playback_id && (
+                  <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
+                    <h3 className="text-xl font-semibold">Viewer Link</h3>
+                    <p className="text-sm text-subtle">Share this with your audience:</p>
+                    <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
+                      {window.location.origin}/stream?eventId={selectedEvent.id}
+                    </code>
+                  </div>
+                )}
+
+                {/* Live Preview (when in preview state) */}
+                {selectedEvent.status === "preview" && selectedEvent.mux_playback_id && (
+                  <LivePreview playbackId={selectedEvent.mux_playback_id} />
+                )}
+              </>
+            ) : (
+              /* Live / ended — full live controls */
+              <>
+                <div className="flex gap-3">
+                  {selectedEvent.status === "live" && (
                     <button
                       onClick={handleEnd}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
@@ -383,7 +420,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                   )}
                 </div>
 
-                {/* OBS Configuration (when provisioned) */}
+                {/* OBS Configuration */}
                 {selectedEvent.mux_stream_key && (
                   <div className="bg-card border border-edge rounded-xl p-6 space-y-4">
                     <h3 className="text-xl font-semibold">OBS Configuration</h3>
@@ -432,7 +469,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                 )}
 
                 {/* Live Preview */}
-                {(selectedEvent.status === "live" || selectedEvent.status === "preview") && selectedEvent.mux_playback_id && (
+                {selectedEvent.status === "live" && selectedEvent.mux_playback_id && (
                   <LivePreview playbackId={selectedEvent.mux_playback_id} />
                 )}
               </>
