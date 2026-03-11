@@ -94,14 +94,26 @@ app.get("/api/mux/events/:id", async (c) => {
   let stream = await getStream(c.env.MUX_DB, c.req.param("id"));
   if (!stream) return c.json({ error: "Not found" }, 404);
 
-  // Lazy backfill: if ended with asset ID but no playback ID, fetch from Mux
-  if (stream.status === "ended" && stream.mux_asset_id && !stream.mux_asset_playback_id) {
+  // Lazy backfill: if ended but missing asset info, fetch from Mux API
+  // This handles cases where the webhook was missed (e.g. preview environments)
+  if (stream.status === "ended" && stream.mux_stream_id && !stream.mux_asset_playback_id) {
     try {
-      const asset = await getAsset(c.env, stream.mux_asset_id);
-      const playbackId = asset.playback_ids?.[0]?.id;
-      if (playbackId) {
-        await updateStreamAsset(c.env.MUX_DB, stream.mux_stream_id!, stream.mux_asset_id, playbackId);
-        stream = (await getStream(c.env.MUX_DB, stream.id))!;
+      let assetId = stream.mux_asset_id;
+
+      // If no asset ID stored, look it up from the live stream's recent assets
+      if (!assetId) {
+        const liveStream = await getLiveStream(c.env, stream.mux_stream_id);
+        const recentAssets = liveStream.recent_asset_ids;
+        assetId = recentAssets?.[recentAssets.length - 1] ?? null;
+      }
+
+      if (assetId) {
+        const asset = await getAsset(c.env, assetId);
+        const playbackId = asset.playback_ids?.[0]?.id;
+        if (playbackId) {
+          await updateStreamAsset(c.env.MUX_DB, stream.mux_stream_id, assetId, playbackId);
+          stream = (await getStream(c.env.MUX_DB, stream.id))!;
+        }
       }
     } catch (e) {
       console.error("[BACKFILL] Failed to fetch asset playback ID:", e);
