@@ -1,7 +1,6 @@
 import { CountdownTimer } from "./CountdownTimer";
 
-const EVENT_BANNER_IMAGE =
-  "https://images.lumacdn.com/event-covers/placeholder-claude-taipei.png";
+const EVENT_BANNER_IMAGE = "/luma-claude-code.avif";
 
 export function EventBanner({
   targetDate,
@@ -19,7 +18,7 @@ export function EventBanner({
       <img
         src={EVENT_BANNER_IMAGE}
         alt="Event banner"
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
       />
       {showCountdown && (
         <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-3">
@@ -37,7 +36,7 @@ export function EventBannerCompact({ className = "" }: { className?: string }) {
       <img
         src={EVENT_BANNER_IMAGE}
         alt="Event banner"
-        className="w-full h-32 object-cover"
+        className="w-full aspect-square object-contain"
       />
     </div>
   );

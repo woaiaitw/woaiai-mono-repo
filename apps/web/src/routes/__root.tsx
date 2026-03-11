@@ -28,8 +28,8 @@ function NavBar() {
   return (
     <nav className="sticky top-0 z-40 border-b border-gray-800 bg-gray-950/80 backdrop-blur-md">
       <div className="mx-auto max-w-5xl flex items-center justify-between h-14 px-4">
-        <Link to="/" className="text-lg font-bold text-white tracking-tight">
-          WOAI AI
+        <Link to="/" className="block">
+          <img src="/logo.svg" alt="WOAI AI" className="h-6" />
         </Link>
 
         <div className="flex items-center gap-4">
