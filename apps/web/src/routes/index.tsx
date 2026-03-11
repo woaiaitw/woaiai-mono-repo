@@ -49,7 +49,7 @@ function EventSection({
   if (events.length === 0) return null;
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-gray-300">{title}</h2>
+      <h2 className="text-lg font-semibold text-body">{title}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {events.map((event) => (
           <EventCard key={event.id} event={event} />
@@ -87,8 +87,8 @@ function HomePage() {
     <main className="mx-auto max-w-5xl px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Events</h1>
-          <p className="mt-1 text-gray-400">Browse upcoming and live events</p>
+          <h1 className="text-3xl font-bold text-heading">Events</h1>
+          <p className="mt-1 text-subtle">Browse upcoming and live events</p>
         </div>
         {isHost && (
           <button
@@ -106,15 +106,15 @@ function HomePage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-32 bg-gray-900 border border-gray-800 rounded-xl animate-pulse"
+              className="h-32 bg-card border border-edge rounded-xl animate-pulse"
             />
           ))}
         </div>
       ) : !hasEvents ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">No events yet</p>
+          <p className="text-subtle text-lg">No events yet</p>
           {isHost && (
-            <p className="mt-2 text-gray-600 text-sm">
+            <p className="mt-2 text-faint text-sm">
               Create your first event to get started
             </p>
           )}

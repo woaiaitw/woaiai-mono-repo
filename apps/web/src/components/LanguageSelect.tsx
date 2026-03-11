@@ -17,7 +17,7 @@ export function LanguageSelect({
       onChange={(e) => onChange(e.target.value)}
       className={
         className ??
-        "px-3 py-2 rounded-lg text-sm font-medium bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+        "px-3 py-2 rounded-lg text-sm font-medium bg-input text-heading hover:bg-card-hover transition-colors"
       }
     >
       {SUPPORTED_LANGUAGES.map((lang) => (

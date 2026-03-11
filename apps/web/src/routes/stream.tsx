@@ -100,14 +100,14 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
   if (!isHost) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-page text-heading flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-gray-400 text-lg">
+          <p className="text-subtle text-lg">
             Only owners and admins can access the host dashboard.
           </p>
           <button
             onClick={() => navigate({ to: "/" })}
-            className="text-blue-400 hover:text-blue-300"
+            className="text-blue-600 hover:text-blue-700"
           >
             Back to home
           </button>
@@ -184,27 +184,27 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-        <p className="text-gray-400">Loading...</p>
+      <div className="min-h-screen bg-page text-heading flex items-center justify-center">
+        <p className="text-subtle">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div className="min-h-screen bg-page text-heading p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Stream Dashboard</h1>
           <div className="flex gap-3">
             <button
               onClick={() => setShowSchedule(!showSchedule)}
-              className="px-4 py-2 bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
             >
               Schedule Stream
             </button>
             <button
               onClick={() => navigate({ to: "/" })}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-subtle hover:text-heading transition-colors"
             >
               Back
             </button>
@@ -212,14 +212,14 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 text-red-400 text-sm">
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-red-600 text-sm">
             {error}
           </div>
         )}
 
         {/* Schedule Form */}
         {showSchedule && (
-          <div className="bg-gray-900 rounded-xl p-6 space-y-4">
+          <div className="bg-card border border-edge rounded-xl p-6 space-y-4">
             <h2 className="text-xl font-semibold">Schedule a Stream</h2>
             <div className="space-y-3">
               <input
@@ -227,32 +227,32 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                 placeholder="Stream title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-gray-800 rounded-lg px-4 py-2 text-white placeholder-gray-500"
+                className="w-full bg-input rounded-lg px-4 py-2 text-heading placeholder-faint"
               />
               <textarea
                 placeholder="Description (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-gray-800 rounded-lg px-4 py-2 text-white placeholder-gray-500 resize-none"
+                className="w-full bg-input rounded-lg px-4 py-2 text-heading placeholder-faint resize-none"
                 rows={2}
               />
               <input
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full bg-gray-800 rounded-lg px-4 py-2 text-white"
+                className="w-full bg-input rounded-lg px-4 py-2 text-heading"
               />
               <div className="flex gap-2">
                 <button
                   onClick={handleSchedule}
                   disabled={!title || !scheduledAt}
-                  className="px-4 py-2 bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
                 >
                   Schedule
                 </button>
                 <button
                   onClick={() => setShowSchedule(false)}
-                  className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                  className="px-4 py-2 bg-input rounded-lg hover:bg-card-hover transition-colors text-sm"
                 >
                   Cancel
                 </button>
@@ -264,7 +264,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
         {/* Events List */}
         <div className="space-y-3">
           {events.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-faint text-center py-8">
               No streams scheduled. Create one to get started.
             </p>
           ) : (
@@ -272,7 +272,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               <div
                 key={ev.id}
                 onClick={() => loadEvent(ev.id)}
-                className={`bg-gray-900 rounded-xl p-4 cursor-pointer hover:bg-gray-800/80 transition-colors flex items-center justify-between ${
+                className={`bg-card border border-edge rounded-xl p-4 cursor-pointer hover:bg-card-hover transition-colors flex items-center justify-between ${
                   selectedEvent?.id === ev.id ? "ring-1 ring-blue-500" : ""
                 }`}
               >
@@ -280,7 +280,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                   <StatusBadge status={ev.status} />
                   <div>
                     <p className="font-semibold">{ev.title}</p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-subtle">
                       {new Date(ev.scheduled_at).toLocaleString()}
                     </p>
                   </div>
@@ -291,7 +291,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                       e.stopPropagation();
                       handleDelete(ev.id);
                     }}
-                    className="text-gray-500 hover:text-red-400 transition-colors text-sm"
+                    className="text-faint hover:text-red-600 transition-colors text-sm"
                   >
                     Delete
                   </button>
@@ -308,7 +308,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               <div>
                 <h2 className="text-2xl font-bold">{selectedEvent.title}</h2>
                 {selectedEvent.description && (
-                  <p className="text-gray-400 mt-1">{selectedEvent.description}</p>
+                  <p className="text-subtle mt-1">{selectedEvent.description}</p>
                 )}
               </div>
               <StatusBadge status={selectedEvent.status} />
@@ -319,7 +319,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               {selectedEvent.status === "scheduled" && !selectedEvent.mux_stream_id && (
                 <button
                   onClick={handleProvision}
-                  className="px-4 py-2 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm"
                 >
                   Provision Stream
                 </button>
@@ -328,7 +328,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                 (selectedEvent.status === "scheduled" && selectedEvent.mux_stream_id)) && (
                 <button
                   onClick={handleGoLive}
-                  className="px-4 py-2 bg-green-600 rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
                 >
                   Go Live
                 </button>
@@ -336,7 +336,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               {(selectedEvent.status === "live" || selectedEvent.status === "preview") && (
                 <button
                   onClick={handleEnd}
-                  className="px-4 py-2 bg-red-600 rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
                 >
                   End Stream
                 </button>
@@ -345,33 +345,33 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
             {/* OBS Configuration (when provisioned) */}
             {selectedEvent.mux_stream_key && (
-              <div className="bg-gray-900 rounded-xl p-6 space-y-4">
+              <div className="bg-card border border-edge rounded-xl p-6 space-y-4">
                 <h3 className="text-xl font-semibold">OBS Configuration</h3>
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">RTMP Server</label>
+                  <label className="text-sm text-subtle">RTMP Server</label>
                   <div className="flex gap-2">
-                    <code className="flex-1 bg-gray-800 px-4 py-2 rounded-lg text-sm font-mono">
+                    <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono">
                       {selectedEvent.rtmpUrl}
                     </code>
                     <button
                       onClick={() => copyToClipboard(selectedEvent.rtmpUrl, "url")}
-                      className="px-3 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 text-sm"
+                      className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
                     >
                       {copied === "url" ? "Copied!" : "Copy"}
                     </button>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400">Stream Key</label>
+                  <label className="text-sm text-subtle">Stream Key</label>
                   <div className="flex gap-2">
-                    <code className="flex-1 bg-gray-800 px-4 py-2 rounded-lg text-sm font-mono truncate">
+                    <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono truncate">
                       {selectedEvent.mux_stream_key}
                     </code>
                     <button
                       onClick={() =>
                         copyToClipboard(selectedEvent.mux_stream_key || "", "key")
                       }
-                      className="px-3 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 text-sm"
+                      className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
                     >
                       {copied === "key" ? "Copied!" : "Copy"}
                     </button>
@@ -382,10 +382,10 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
             {/* Viewer Link */}
             {selectedEvent.mux_playback_id && (
-              <div className="bg-gray-900 rounded-xl p-6 space-y-2">
+              <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
                 <h3 className="text-xl font-semibold">Viewer Link</h3>
-                <p className="text-sm text-gray-400">Share this with your audience:</p>
-                <code className="block bg-gray-800 px-4 py-2 rounded-lg text-sm font-mono break-all">
+                <p className="text-sm text-subtle">Share this with your audience:</p>
+                <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
                   {window.location.origin}/stream?eventId={selectedEvent.id}
                 </code>
               </div>
@@ -393,7 +393,7 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
             {/* Live Preview */}
             {(selectedEvent.status === "live" || selectedEvent.status === "preview") && selectedEvent.mux_playback_id && (
-              <div className="bg-gray-900 rounded-xl p-6 space-y-2">
+              <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
                 <h3 className="text-xl font-semibold">Live Preview</h3>
                 <MuxPlayerEmbed playbackId={selectedEvent.mux_playback_id} />
               </div>
@@ -401,8 +401,8 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
 
             {/* Quick Start Instructions */}
             {selectedEvent.mux_stream_key && selectedEvent.status !== "ended" && (
-              <div className="bg-gray-900/50 rounded-xl p-6 space-y-2 text-sm text-gray-400">
-                <h3 className="text-white font-semibold">Quick Start</h3>
+              <div className="bg-card-hover rounded-xl p-6 space-y-2 text-sm text-subtle">
+                <h3 className="text-heading font-semibold">Quick Start</h3>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>Open OBS Studio &rarr; Settings &rarr; Stream</li>
                   <li>Set Service to "Custom"</li>
@@ -468,8 +468,8 @@ function ViewerPanel({
   }, [eventId, initialPlaybackId]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-gray-800">
+    <div className="min-h-screen bg-page text-heading flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-edge">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold">
             {event?.title || "Live Stream"}
@@ -478,7 +478,7 @@ function ViewerPanel({
         </div>
         <button
           onClick={onBack}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-subtle hover:text-heading transition-colors"
         >
           Back
         </button>
@@ -494,8 +494,8 @@ function ViewerPanel({
           </div>
         ) : status === "preview" ? (
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin mx-auto" />
-            <p className="text-gray-400 text-lg">
+            <div className="w-16 h-16 border-4 border-edge border-t-blue-500 rounded-full animate-spin mx-auto" />
+            <p className="text-subtle text-lg">
               Host is getting ready... stream will begin shortly.
             </p>
           </div>
@@ -504,9 +504,9 @@ function ViewerPanel({
             <MuxPlayerEmbed playbackId={playbackId} />
           </div>
         ) : status === "ended" ? (
-          <p className="text-gray-500 text-lg">This stream has ended.</p>
+          <p className="text-faint text-lg">This stream has ended.</p>
         ) : !playbackId ? (
-          <p className="text-gray-500 text-lg">
+          <p className="text-faint text-lg">
             No stream available. Ask the host for a viewer link.
           </p>
         ) : (
@@ -523,16 +523,16 @@ function ViewerPanel({
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    scheduled: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    preview: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    live: "bg-green-500/20 text-green-400 border-green-500/30",
-    ended: "bg-gray-500/20 text-gray-400 border-gray-500/30",
-    active: "bg-green-500/20 text-green-400 border-green-500/30",
-    idle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    disabled: "bg-red-500/20 text-red-400 border-red-500/30",
-    loading: "bg-gray-500/20 text-gray-400 border-gray-500/30",
-    error: "bg-red-500/20 text-red-400 border-red-500/30",
-    ready: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    scheduled: "bg-blue-50 text-blue-700 border-blue-200",
+    preview: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    live: "bg-green-50 text-green-700 border-green-200",
+    ended: "bg-gray-100 text-gray-600 border-gray-200",
+    active: "bg-green-50 text-green-700 border-green-200",
+    idle: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    disabled: "bg-red-50 text-red-700 border-red-200",
+    loading: "bg-gray-100 text-gray-600 border-gray-200",
+    error: "bg-red-50 text-red-700 border-red-200",
+    ready: "bg-blue-50 text-blue-700 border-blue-200",
   };
   const labels: Record<string, string> = {
     scheduled: "Scheduled",

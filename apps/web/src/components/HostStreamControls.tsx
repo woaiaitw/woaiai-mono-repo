@@ -18,15 +18,15 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 
   return (
     <div className="space-y-1">
-      <span className="text-xs font-medium text-gray-400">{label}</span>
+      <span className="text-xs font-medium text-subtle">{label}</span>
       <div className="flex items-center gap-2">
-        <code className="flex-1 text-sm text-gray-300 bg-gray-800 px-3 py-2 rounded-lg truncate">
+        <code className="flex-1 text-sm text-body bg-input px-3 py-2 rounded-lg truncate">
           {text}
         </code>
         <button
           type="button"
           onClick={copy}
-          className="shrink-0 px-3 py-2 text-xs font-medium bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+          className="shrink-0 px-3 py-2 text-xs font-medium bg-input text-body rounded-lg hover:bg-card-hover transition-colors"
         >
           {copied ? "Copied!" : "Copy"}
         </button>
@@ -61,13 +61,13 @@ export function HostStreamControls({
   const isProvisioned = !!event.mux_stream_id;
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
+    <div className="bg-card border border-edge rounded-xl p-5 space-y-4">
+      <h3 className="text-sm font-semibold text-body uppercase tracking-wider">
         Host Controls
       </h3>
 
       {error && (
-        <p className="text-sm text-red-400 bg-red-500/10 rounded-lg px-3 py-2">
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -96,7 +96,7 @@ export function HostStreamControls({
           {event.mux_stream_key && (
             <CopyButton text={event.mux_stream_key} label="Stream Key" />
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-faint">
             Paste these into OBS Studio under Settings &rarr; Stream
           </p>
         </div>
