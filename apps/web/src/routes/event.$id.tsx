@@ -70,7 +70,7 @@ function EventPage() {
       {event.status === "scheduled" && (
         <EventBanner
           targetDate={event.scheduled_at}
-          className="aspect-video"
+          className="aspect-square max-w-md mx-auto"
         />
       )}
 
