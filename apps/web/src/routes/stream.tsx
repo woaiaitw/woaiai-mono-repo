@@ -462,12 +462,21 @@ function ViewerPanel({
         if (cancelled) return;
         // Only update event state when display fields change to avoid re-render cascades
         setEvent((prev) =>
-          prev && prev.title === ev.title && prev.status === ev.status && prev.scheduled_at === ev.scheduled_at
+          prev &&
+          prev.title === ev.title &&
+          prev.status === ev.status &&
+          prev.scheduled_at === ev.scheduled_at &&
+          prev.mux_asset_playback_id === ev.mux_asset_playback_id
             ? prev
             : ev
         );
         setStatus(ev.status);
         if (ev.mux_playback_id) setPlaybackId(ev.mux_playback_id);
+        // Stop polling once ended with replay available
+        if (ev.status === "ended" && ev.mux_asset_playback_id) {
+          cancelled = true;
+          clearInterval(interval);
+        }
       } catch {
         if (!cancelled) setStatus("error");
       }
@@ -517,8 +526,16 @@ function ViewerPanel({
           <div className="w-full max-w-5xl">
             <MuxPlayerEmbed playbackId={playbackId} />
           </div>
+        ) : status === "ended" && event?.mux_asset_playback_id ? (
+          <div className="w-full max-w-5xl space-y-2">
+            <p className="text-sm text-subtle">This stream has ended — watch the replay:</p>
+            <MuxPlayerEmbed playbackId={event.mux_asset_playback_id} />
+          </div>
         ) : status === "ended" ? (
-          <p className="text-faint text-lg">This stream has ended.</p>
+          <div className="text-center space-y-2">
+            <div className="w-8 h-8 border-2 border-edge border-t-blue-500 rounded-full animate-spin mx-auto" />
+            <p className="text-faint text-lg">This stream has ended. The recording is being processed...</p>
+          </div>
         ) : !playbackId ? (
           <p className="text-faint text-lg">
             No stream available. Ask the host for a viewer link.

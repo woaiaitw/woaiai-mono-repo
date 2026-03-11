@@ -109,6 +109,19 @@ export async function deleteLiveStream(
   }
 }
 
+/** Get an asset by ID */
+export async function getAsset(env: Env, assetId: string): Promise<MuxAsset> {
+  const res = await fetch(`${MUX_BASE}/video/v1/assets/${assetId}`, {
+    headers: authHeaders(env),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mux get asset failed: ${res.status} ${text}`);
+  }
+  const data = (await res.json()) as { data: MuxAsset };
+  return data.data;
+}
+
 /** Reset stream key (security rotation) */
 export async function resetStreamKey(
   env: Env,

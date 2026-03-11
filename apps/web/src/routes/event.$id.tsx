@@ -88,9 +88,19 @@ function EventPage() {
       )}
 
       {event.status === "ended" && (
-        <div className="bg-card border border-edge rounded-xl p-8 text-center">
-          <p className="text-subtle">This event has ended</p>
-        </div>
+        event.mux_asset_playback_id ? (
+          <div className="space-y-2">
+            <p className="text-sm text-subtle">This event has ended — watch the replay:</p>
+            <StreamPlayer playbackId={event.mux_asset_playback_id} />
+          </div>
+        ) : (
+          <div className="bg-card border border-edge rounded-xl p-8 text-center space-y-2">
+            <div className="flex justify-center">
+              <div className="h-6 w-6 border-2 border-subtle border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-subtle">This event has ended. The recording is being processed...</p>
+          </div>
+        )
       )}
 
       {/* Host controls */}

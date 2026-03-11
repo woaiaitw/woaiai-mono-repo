@@ -7,6 +7,7 @@ import {
   completeLiveStream,
   deleteLiveStream,
   resetStreamKey,
+  getAsset,
 } from "./lib/mux-api";
 import {
   createStream,
@@ -90,8 +91,22 @@ app.get("/api/mux/events", async (c) => {
 
 // Get single stream — public
 app.get("/api/mux/events/:id", async (c) => {
-  const stream = await getStream(c.env.MUX_DB, c.req.param("id"));
+  let stream = await getStream(c.env.MUX_DB, c.req.param("id"));
   if (!stream) return c.json({ error: "Not found" }, 404);
+
+  // Lazy backfill: if ended with asset ID but no playback ID, fetch from Mux
+  if (stream.status === "ended" && stream.mux_asset_id && !stream.mux_asset_playback_id) {
+    try {
+      const asset = await getAsset(c.env, stream.mux_asset_id);
+      const playbackId = asset.playback_ids?.[0]?.id;
+      if (playbackId) {
+        await updateStreamAsset(c.env.MUX_DB, stream.mux_stream_id!, stream.mux_asset_id, playbackId);
+        stream = (await getStream(c.env.MUX_DB, stream.id))!;
+      }
+    } catch (e) {
+      console.error("[BACKFILL] Failed to fetch asset playback ID:", e);
+    }
+  }
 
   const { mux_stream_key, ...publicStream } = stream;
   return c.json(publicStream);
@@ -341,12 +356,13 @@ app.post("/api/mux/webhooks", async (c) => {
         break;
 
       case "video.asset.ready": {
-        // VOD asset is ready — store the asset ID
+        // VOD asset is ready — store the asset ID and its playback ID for replay
         const assetId = body.data?.id as string | undefined;
         const liveStreamId = body.data?.live_stream_id as string | undefined;
+        const assetPlaybackId = body.data?.playback_ids?.[0]?.id as string | undefined;
         if (assetId && liveStreamId) {
-          await updateStreamAsset(c.env.MUX_DB, liveStreamId, assetId);
-          console.log(`[MUX] VOD asset ${assetId} stored for stream ${liveStreamId}`);
+          await updateStreamAsset(c.env.MUX_DB, liveStreamId, assetId, assetPlaybackId);
+          console.log(`[MUX] VOD asset ${assetId} (playback: ${assetPlaybackId}) stored for stream ${liveStreamId}`);
         }
         break;
       }
