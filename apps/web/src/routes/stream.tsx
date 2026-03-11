@@ -13,6 +13,7 @@ import {
 import { authClient } from "../lib/auth-client";
 import type { StreamEvent, StreamEventHost } from "@web-template/shared";
 import { EventBanner } from "../components/EventBanner";
+import { StreamSetupChecklist } from "../components/StreamSetupChecklist";
 
 export const Route = createFileRoute("/stream")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -316,34 +317,16 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
               <StatusBadge status={selectedEvent.status} />
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              {selectedEvent.status === "scheduled" && !selectedEvent.mux_stream_id && (
-                <button
-                  onClick={handleProvision}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm"
-                >
-                  Provision Stream
-                </button>
-              )}
-              {(selectedEvent.status === "preview" ||
-                (selectedEvent.status === "scheduled" && selectedEvent.mux_stream_id)) && (
-                <button
-                  onClick={handleGoLive}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
-                >
-                  Go Live
-                </button>
-              )}
-              {(selectedEvent.status === "live" || selectedEvent.status === "preview") && (
-                <button
-                  onClick={handleEnd}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
-                >
-                  End Stream
-                </button>
-              )}
-              {(selectedEvent.status === "scheduled" || selectedEvent.status === "ended") && (
+            {selectedEvent.status === "scheduled" ? (
+              <>
+                {/* Guided Setup Checklist */}
+                <StreamSetupChecklist
+                  event={selectedEvent}
+                  onProvision={handleProvision}
+                  error={error}
+                />
+
+                {/* Delete button */}
                 <button
                   onClick={() => {
                     if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
@@ -354,78 +337,105 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                 >
                   Delete Event
                 </button>
-              )}
-            </div>
 
-            {/* OBS Configuration (when provisioned) */}
-            {selectedEvent.mux_stream_key && (
-              <div className="bg-card border border-edge rounded-xl p-6 space-y-4">
-                <h3 className="text-xl font-semibold">OBS Configuration</h3>
-                <div className="space-y-2">
-                  <label className="text-sm text-subtle">RTMP Server</label>
-                  <div className="flex gap-2">
-                    <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono">
-                      {selectedEvent.rtmpUrl}
+                {/* Viewer Link (shown once provisioned) */}
+                {selectedEvent.mux_playback_id && (
+                  <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
+                    <h3 className="text-xl font-semibold">Viewer Link</h3>
+                    <p className="text-sm text-subtle">Share this with your audience:</p>
+                    <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
+                      {window.location.origin}/stream?eventId={selectedEvent.id}
                     </code>
-                    <button
-                      onClick={() => copyToClipboard(selectedEvent.rtmpUrl, "url")}
-                      className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
-                    >
-                      {copied === "url" ? "Copied!" : "Copy"}
-                    </button>
                   </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Action Buttons for preview/live/ended */}
+                <div className="flex gap-3">
+                  {selectedEvent.status === "preview" && (
+                    <button
+                      onClick={handleGoLive}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Go Live
+                    </button>
+                  )}
+                  {(selectedEvent.status === "live" || selectedEvent.status === "preview") && (
+                    <button
+                      onClick={handleEnd}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
+                    >
+                      End Stream
+                    </button>
+                  )}
+                  {selectedEvent.status === "ended" && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+                          handleDelete(selectedEvent.id);
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-900/50 border border-red-500/30 text-red-400 rounded-lg font-semibold hover:bg-red-900 hover:text-red-300 transition-colors text-sm"
+                    >
+                      Delete Event
+                    </button>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-subtle">Stream Key</label>
-                  <div className="flex gap-2">
-                    <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono truncate">
-                      {selectedEvent.mux_stream_key}
+
+                {/* OBS Configuration (when provisioned) */}
+                {selectedEvent.mux_stream_key && (
+                  <div className="bg-card border border-edge rounded-xl p-6 space-y-4">
+                    <h3 className="text-xl font-semibold">OBS Configuration</h3>
+                    <div className="space-y-2">
+                      <label className="text-sm text-subtle">RTMP Server</label>
+                      <div className="flex gap-2">
+                        <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono">
+                          {selectedEvent.rtmpUrl}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(selectedEvent.rtmpUrl, "url")}
+                          className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
+                        >
+                          {copied === "url" ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm text-subtle">Stream Key</label>
+                      <div className="flex gap-2">
+                        <code className="flex-1 bg-input px-4 py-2 rounded-lg text-sm font-mono truncate">
+                          {selectedEvent.mux_stream_key}
+                        </code>
+                        <button
+                          onClick={() =>
+                            copyToClipboard(selectedEvent.mux_stream_key || "", "key")
+                          }
+                          className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
+                        >
+                          {copied === "key" ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Viewer Link */}
+                {selectedEvent.mux_playback_id && (
+                  <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
+                    <h3 className="text-xl font-semibold">Viewer Link</h3>
+                    <p className="text-sm text-subtle">Share this with your audience:</p>
+                    <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
+                      {window.location.origin}/stream?eventId={selectedEvent.id}
                     </code>
-                    <button
-                      onClick={() =>
-                        copyToClipboard(selectedEvent.mux_stream_key || "", "key")
-                      }
-                      className="px-3 py-2 bg-input rounded-lg hover:bg-card-hover text-sm"
-                    >
-                      {copied === "key" ? "Copied!" : "Copy"}
-                    </button>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Viewer Link */}
-            {selectedEvent.mux_playback_id && (
-              <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
-                <h3 className="text-xl font-semibold">Viewer Link</h3>
-                <p className="text-sm text-subtle">Share this with your audience:</p>
-                <code className="block bg-input px-4 py-2 rounded-lg text-sm font-mono break-all">
-                  {window.location.origin}/stream?eventId={selectedEvent.id}
-                </code>
-              </div>
-            )}
-
-            {/* Live Preview */}
-            {(selectedEvent.status === "live" || selectedEvent.status === "preview") && selectedEvent.mux_playback_id && (
-              <div className="bg-card border border-edge rounded-xl p-6 space-y-2">
-                <h3 className="text-xl font-semibold">Live Preview</h3>
-                <MuxPlayerEmbed playbackId={selectedEvent.mux_playback_id} />
-              </div>
-            )}
-
-            {/* Quick Start Instructions */}
-            {selectedEvent.mux_stream_key && selectedEvent.status !== "ended" && (
-              <div className="bg-card-hover rounded-xl p-6 space-y-2 text-sm text-subtle">
-                <h3 className="text-heading font-semibold">Quick Start</h3>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Open OBS Studio &rarr; Settings &rarr; Stream</li>
-                  <li>Set Service to "Custom"</li>
-                  <li>Paste the RTMP Server and Stream Key above</li>
-                  <li>Click "Start Streaming" in OBS</li>
-                  <li>Status will change to "Preview" once OBS connects</li>
-                  <li>Click "Go Live" when ready for viewers</li>
-                </ol>
-              </div>
+                {/* Live Preview */}
+                {(selectedEvent.status === "live" || selectedEvent.status === "preview") && selectedEvent.mux_playback_id && (
+                  <LivePreview playbackId={selectedEvent.mux_playback_id} />
+                )}
+              </>
             )}
           </div>
         )}
@@ -571,11 +581,20 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-const MuxPlayerEmbed = memo(function MuxPlayerEmbed({ playbackId }: { playbackId: string }) {
+const MuxPlayerEmbed = memo(function MuxPlayerEmbed({
+  playbackId,
+  muted,
+}: {
+  playbackId: string;
+  muted?: boolean;
+}) {
+  const src = muted
+    ? `https://player.mux.com/${playbackId}?muted`
+    : `https://player.mux.com/${playbackId}`;
   return (
     <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
       <iframe
-        src={`https://player.mux.com/${playbackId}`}
+        src={src}
         className="w-full h-full border-0"
         allow="autoplay; fullscreen; picture-in-picture"
         allowFullScreen
@@ -583,3 +602,37 @@ const MuxPlayerEmbed = memo(function MuxPlayerEmbed({ playbackId }: { playbackId
     </div>
   );
 });
+
+function LivePreview({ playbackId }: { playbackId: string }) {
+  const [muted, setMuted] = useState(true);
+
+  return (
+    <div className="bg-card border border-edge rounded-xl p-6 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Live Preview</h3>
+        <button
+          onClick={() => setMuted((m) => !m)}
+          className="flex items-center gap-2 px-3 py-1.5 bg-input rounded-lg hover:bg-card-hover transition-colors text-sm"
+        >
+          {muted ? (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+              Unmute
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+              Mute
+            </>
+          )}
+        </button>
+      </div>
+      <MuxPlayerEmbed playbackId={playbackId} muted={muted} />
+    </div>
+  );
+}
