@@ -289,7 +289,9 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDelete(ev.id);
+                      if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+                        handleDelete(ev.id);
+                      }
                     }}
                     className="text-gray-500 hover:text-red-400 transition-colors text-sm"
                   >
@@ -339,6 +341,18 @@ function HostDashboard({ initialEventId }: { initialEventId: string }) {
                   className="px-4 py-2 bg-red-600 rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm"
                 >
                   End Stream
+                </button>
+              )}
+              {(selectedEvent.status === "scheduled" || selectedEvent.status === "ended") && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+                      handleDelete(selectedEvent.id);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-900/50 border border-red-500/30 text-red-400 rounded-lg font-semibold hover:bg-red-900 hover:text-red-300 transition-colors text-sm"
+                >
+                  Delete Event
                 </button>
               )}
             </div>
