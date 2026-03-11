@@ -85,6 +85,7 @@ export interface StreamEvent {
   mux_playback_id: string | null;
   mux_stream_key: string | null;
   mux_asset_id: string | null;
+  mux_asset_playback_id: string | null;
   created_by: string;
   created_at: string;
   ended_at: string | null;
