@@ -10,6 +10,7 @@ export interface StreamRow {
   mux_playback_id: string | null;
   mux_stream_key: string | null;
   mux_asset_id: string | null;
+  mux_asset_playback_id: string | null;
   created_by: string;
   created_at: string;
   ended_at: string | null;
@@ -114,12 +115,20 @@ export async function updateStreamStatus(
 export async function updateStreamAsset(
   db: D1Database,
   muxStreamId: string,
-  muxAssetId: string
+  muxAssetId: string,
+  muxAssetPlaybackId?: string
 ): Promise<void> {
-  await db
-    .prepare("UPDATE streams SET mux_asset_id = ? WHERE mux_stream_id = ?")
-    .bind(muxAssetId, muxStreamId)
-    .run();
+  if (muxAssetPlaybackId) {
+    await db
+      .prepare("UPDATE streams SET mux_asset_id = ?, mux_asset_playback_id = ? WHERE mux_stream_id = ?")
+      .bind(muxAssetId, muxAssetPlaybackId, muxStreamId)
+      .run();
+  } else {
+    await db
+      .prepare("UPDATE streams SET mux_asset_id = ? WHERE mux_stream_id = ?")
+      .bind(muxAssetId, muxStreamId)
+      .run();
+  }
 }
 
 export async function updateStreamKey(

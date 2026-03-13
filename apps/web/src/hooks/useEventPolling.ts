@@ -57,13 +57,17 @@ export function useEventPolling({
     };
   }, [fetchEvent, interval]);
 
-  // Stop polling when event has ended
+  // Stop polling when event has ended and replay is available (or no asset expected)
   useEffect(() => {
-    if (event?.status === "ended" && intervalRef.current) {
+    if (
+      event?.status === "ended" &&
+      event.mux_asset_playback_id &&
+      intervalRef.current
+    ) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  }, [event?.status]);
+  }, [event?.status, event?.mux_asset_playback_id]);
 
   return { event, hostEvent, error, isLoading, refetch: fetchEvent };
 }
