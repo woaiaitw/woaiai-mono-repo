@@ -5,7 +5,9 @@ import { StatusBadge } from "~/components/StatusBadge";
 import { CountdownTimer } from "~/components/CountdownTimer";
 import { StreamPlayer } from "~/components/StreamPlayer";
 import { HostStreamControls } from "~/components/HostStreamControls";
+import { StreamSetupChecklist } from "~/components/StreamSetupChecklist";
 import { EventBanner } from "~/components/EventBanner";
+import { provisionEvent, goLive, endEvent } from "~/lib/mux-client";
 
 export const Route = createFileRoute("/event/$id")({
   component: EventPage,
@@ -105,7 +107,37 @@ function EventPage() {
 
       {/* Host controls */}
       {isHost && hostEvent && event.status !== "ended" && (
-        <HostStreamControls event={hostEvent} onUpdate={refetch} />
+        (event.status === "scheduled" || event.status === "preview") ? (
+          <>
+            <StreamSetupChecklist
+              event={hostEvent}
+              onProvision={async () => {
+                await provisionEvent(hostEvent.id);
+                refetch();
+              }}
+            />
+            {event.status === "preview" && (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={async () => { await goLive(hostEvent.id); refetch(); }}
+                  className="px-4 py-2.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Go Live
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => { await endEvent(hostEvent.id); refetch(); }}
+                  className="px-4 py-2.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  End Stream
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <HostStreamControls event={hostEvent} onUpdate={refetch} />
+        )
       )}
     </main>
   );
